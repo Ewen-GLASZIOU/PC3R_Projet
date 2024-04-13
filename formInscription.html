@@ -8,16 +8,17 @@
 </head>
 <body>
     <form id="formInscription">
-        <label for="nom">Nom :</label>
+        <label for="nom">*Nom :</label>
         <input type="text" id="nom" name="nom" required>
 
-        <label for="prenom">Prénom :</label>
+        <label for="prenom">*Prénom :</label>
         <input type="text" id="prenom" name="prenom" required>
 
-        <label for="age">Âge :</label>
-        <input type="number" id="age" name="age" required min="0">
+        <label for="date-de-naissance">*Date de naissance :</label>
+        <input type="date" id="date-de-naissance" name="date-de-naissance" required>
 
-        <label for="niveauEducation">Niveau d'éducation :</label>
+
+        <label for="niveauEducation">*Niveau d'éducation :</label>
         <select id="niveauEducation" name="niveauEducation" required>
             <option value="">Sélectionnez une option</option>
             <option value="aucun">Aucun diplôme</option>
@@ -32,6 +33,13 @@
 
         <label for="diplome">Diplôme (dépôt de fichier) :</label>
         <input type="file" id="diplome" name="diplome" accept=".pdf">
+
+
+        <label for="email">*Email :</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="motDePasse">*Mot de passe :</label>
+        <input type="password" id="motDePasse" name="motDePasse" required>
 
         <button type="submit">Soumettre</button>
     </form>
