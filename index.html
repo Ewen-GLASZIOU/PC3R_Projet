@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnHub - {{.Title}}</title>
+    <link rel="stylesheet" href="/static/styleMain.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="user-profile">
+            <img src="/static/Images/user.png" alt="User Profile Picture">
+            <!-- <div id="user-name"> {{printf "%s" .Name}} </div> -->
+            <div id="user-name"> {{.Firstname}} {{.Name}} </div>
+        </div>
+        <div class="domain-list">
+            <h2>Domaines</h2>
+            <ul>
+                {{ range .Domaine }}
+                <li>{{ .Nom }}
+                    <ul>
+                        {{ range .Themes }}
+                            <li>{{ . }}</li>
+                        {{ end }}
+                    </ul>
+                </li>
+                {{ end }}
+            </ul>
+        </div>
+    </div>
+
+    <form id="searchForm" action="/" method="POST">
+        <input type="search" id="searchBar" name="query" placeholder="Rechercher...">
+        <button type="submit">Recherche</button>
+    </form>
+
+    <div class="main-content">
+        <!-- Le contenu principal de notre page -->
+        <p>{{.Content}}</p>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

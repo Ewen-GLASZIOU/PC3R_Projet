@@ -1,0 +1,40 @@
+.sidebar {
+    width: 10%;
+    height: 100vh;
+    background-color: #f0f0f0;
+    float: left;
+    padding: 20px;
+}
+
+.user-profile img {
+    width: 30%;
+    height: 30%;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.user-profile p {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.domain-list h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.domain-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.domain-list li {
+    font-size: 16px;
+    padding: 5px 0;
+    cursor: pointer;
+}
+
+.domain-list li:hover {
+    background-color: #ccc;
+}
