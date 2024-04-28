@@ -40,6 +40,7 @@ function getYoutubeID(videoIdPiece) {
 }
 
 function getYoutubeInformations(videoId) {
+    let API_KEY = "AIzaSyDXCfbgY6DIqU72BZa8bpnOL4n8WyTX_AY" // TODO : delete this
     // Récupérer les informations de la vidéo via l'API YouTube
     $.ajax({
         url: `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${API_KEY}&part=snippet`,
@@ -65,8 +66,7 @@ function getYoutubeInformations(videoId) {
 function checkLink() {
     // Récupérer la valeur du lien de la vidéo
     let documentLink = document.getElementById("documentLink").value;
-    let lastVideoID = null;
-
+    let lastVideoId = null;
     
     document.getElementById("documentTitle").disabled = true;
     document.getElementById("documentAuthors").disabled = true;
@@ -90,14 +90,14 @@ function checkLink() {
             //https://www.youtube.com/watch?v=JX1gUaRydFo
             //https://youtu.be/JX1gUaRydFo?si=2ps9vIu7AiNgGm1X
 
-            // Récupérer les informations de la vidéo
-            //getYoutubeInformations(videoId);
-
-            let videoID = getYoutubeVideoId(url);
-
-            if(videoID != lastVideoID) {
-                lastVideoID = videoID;
-                afficherMiniatureYoutube(documentLink);
+            // Récupération de l'ID de la vidéo
+            let videoId = getYoutubeVideoId(documentLink);
+            
+            if(videoId != lastVideoId) {
+                lastVideoId = videoId;
+                // Récupération des informations de la vidéo
+                getYoutubeInformations(videoId);
+                afficherMiniatureYoutube(videoId);
             }            
         } else if (documentLink.includes(".pdf")) {            
             if (documentLink.includes("dblp.org")) {
@@ -139,8 +139,8 @@ function resetFormulaire() {
 
 // Fonction pour extraire l'identifiant de la vidéo YouTube à partir de l'URL
 function getYoutubeVideoId(url) {
-    var videoId = null;
-    var match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    let videoId = null;
+    let match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
     if (match) {
         videoId = match[1];
     }
@@ -148,7 +148,7 @@ function getYoutubeVideoId(url) {
 }
 
 // Fonction pour afficher l'image miniature de la vidéo YouTube
-function afficherMiniatureYoutube(url) {    
+function afficherMiniatureYoutube(videoId) {    
     // Afficher l'image miniature dans un élément HTML
     $.ajax({
         url: "/miniature?id=" + videoId,
