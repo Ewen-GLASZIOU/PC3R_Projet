@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Check if the form exists before adding an event listener
-    var formInscription = document.getElementById('formInscription');
+    let formInscription = document.getElementById('formInscription');
     if (formInscription) {
         formInscription.addEventListener('submit', function(event) {
             event.preventDefault(); // Prevents the default form submission
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Adding event listeners to menu items as before
-    var menuItems = document.querySelectorAll('.menu-item');
+    let menuItems = document.querySelectorAll('.menu-item');
     menuItems.forEach(function(item) {
         item.addEventListener('click', function() {
             this.classList.toggle('active');
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Handle formConnexion submission
-    var formConnexion = document.getElementById('formConnexion');
+    let formConnexion = document.getElementById('formConnexion');
     if (formConnexion) {
         formConnexion.addEventListener('submit', function(event) {
             event.preventDefault(); // Prevents the default form submission

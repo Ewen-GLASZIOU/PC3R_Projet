@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LearnHub - {{.Title}}</title>
     <link rel="stylesheet" href="/static/styleMain.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
     <div class="sidebar">
@@ -39,6 +40,19 @@
         <p>{{.Content}}</p>
     </div>
 
+    <button onclick="chargerFormulaire()" id="buttonFormulaire" type="button" >Add</button>
+    <div id="formulaireContainer">
+        <!-- Le contenu du formulaire sera inséré ici via AJAX -->
+    </div>
+    <!-- <div class="add button" >
+        <button type="submit">Add</button>
+    </div> -->
+
+    <div class="footer">
+        <p>LearnHub; 2024</p>
+    </div>
+
     <script src="/static/script.js"></script>
+    <script src="/static/scriptFormulaire.js"></script>
 </body>
 </html>

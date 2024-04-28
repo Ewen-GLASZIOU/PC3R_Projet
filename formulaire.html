@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulaire vidéo</title>
+</head>
+<body>
+
+<h2>Ajouter un document</h2>
+
+<form id="documentForm">
+    <label for="documentLink">Lien du document :</label><br>
+    <!-- <input onpaste="validerFormulaire()" type="text" id="documentLink" name="documentLink"> <- à coller <br><br> -->
+    <input type="text" id="documentLink" name="documentLink"><br><br>
+    
+    <label for="documentTitle">Titre :</label><br>
+    <input type="text" id="documentTitle" name="documentTitle" disabled><br><br>
+    
+    <label for="documentAuthors">Auteurs :</label><br>
+    <input type="text" id="documentAuthors" name="documentAuthors" disabled><br><br>
+    
+    <label for="documentDate">Date :</label><br>
+    <input type="text" id="documentDate" name="documentDate" disabled><br><br>
+
+    <!-- <img src="" class="img-responsive" id="documentThumbnail" alt="Image du document" style="display: none;"><br><br> -->
+    <div id="documentThumbnail"></div><br><br>
+    
+    <label for="domaineDocument">Domaine :</label><br>
+    <select name="domaines" id="domaine-select" disabled>
+        <option value="">--Choisissez une option--</option>
+        <option value="informatique">Informatique</option>
+    </select><br><br>
+    
+    <label for="themeDocument">Theme :</label><br>
+    <select name="themes" id="theme-select" disabled>
+        <option value="">--Choisissez une option--</option>
+        <!-- <option value="algo">Algo</option> -->
+    </select><br><br>
+
+    <button onclick="validerFormulaire()" type="button" id="ajouterBtn">Ajouter</button>
+    <button onclick="resetFormulaire()" type="button" id="annulerBtn">Annuler</button>
+</form>
+<button onclick="fermerFormulaire()" type="button" id="retourBtn">Retour</button>
+
+</body>
+</html>

@@ -172,6 +172,22 @@ func getContent(query string) Content {
 	return myContent
 }
 
+func getYoutubeThumbnail(videoID string) string {
+	return "https://img.youtube.com/vi/" + videoID + "/0.jpg"
+}
+
+// Permet de charger les différentes pages html néccessaires
+func handler(w http.ResponseWriter, r *http.Request, htmlName string) {
+	// Charger le formulaire d'ajout de documents
+	formulaire := template.Must(template.ParseFiles(htmlName))
+
+	err := formulaire.Execute(w, nil)
+	if err != nil {
+		http.Error(w, "Impossible de charger "+htmlName, http.StatusInternalServerError)
+		return
+	}
+}
+
 func main() {
 	// On indique l'emplacement de nos données static (Images, css, javascript, etc...)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
@@ -198,7 +214,7 @@ func main() {
 	var dom []Domaine
 	var content Content
 
-	// Définir la route pour la page
+	// Définir la route pour la page par défaut
 	http.HandleFunc("/aled", func(w http.ResponseWriter, r *http.Request) {
 		// On récupère le nom et prenom de l'utilisateur
 		query := "SELECT prenom, nom FROM utilisateur WHERE id = ?"
@@ -222,6 +238,29 @@ func main() {
 			Domaine:   dom,
 			Content:   content,
 		}
+
+		// Exécuter le modèle avec les données fournies
+		err = tmpl.Execute(w, data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+
+	// Définir la route pour la page de formulaire
+	http.HandleFunc("/formulaire", func(w http.ResponseWriter, r *http.Request) {
+		handler(w, r, "formulaire.html")
+	})
+	http.HandleFunc("/null", func(w http.ResponseWriter, r *http.Request) {
+		handler(w, r, "null.html")
+	})
+	// 127.0.0.1:8080/miniature?id=JX1gUaRydFo
+	http.HandleFunc("/miniature", func(w http.ResponseWriter, r *http.Request) {
+		tmpl := template.Must(template.ParseFiles("miniature.html"))
+		data := getYoutubeThumbnail(r.URL.Query().Get("id"))
+
+		log.Println(r.URL.Query().Get("id"))
+		log.Println(data)
 
 		// Exécuter le modèle avec les données fournies
 		err = tmpl.Execute(w, data)
