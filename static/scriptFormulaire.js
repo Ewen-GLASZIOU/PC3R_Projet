@@ -20,21 +20,11 @@ function chargerFormulaire() {
         }
     });
 }
+
 function fermerFormulaire() {
-    $.ajax({
-        url: "/null", // URL vide
-        type: "GET",
-        success: function(response) {
-            $("#formulaireContainer").html(response); // Insérer le contenu récupéré dans la div
-            document.getElementById("buttonFormulaire").style.display = "block";
-        },
-        error: function(xhr, status, error) {
-            console.error("Erreur lors du chargement du formulaire: " + error);
-        }
-    });
+    $("#formulaireContainer").html("");
+    document.getElementById("buttonFormulaire").style.display = "block";
 }
-
-
 
 // Fonction pour attacher l'événement au formulaire après qu'il a été chargé via AJAX
 function attacherEvenement() {
@@ -75,6 +65,8 @@ function getYoutubeInformations(videoId) {
 function checkLink() {
     // Récupérer la valeur du lien de la vidéo
     let documentLink = document.getElementById("documentLink").value;
+    let lastVideoID = null;
+
     
     document.getElementById("documentTitle").disabled = true;
     document.getElementById("documentAuthors").disabled = true;
@@ -87,33 +79,27 @@ function checkLink() {
     // Expression régulière pour rechercher "http://" ou "https://"
     let regex = /https?:\/\//;
 
-// Vérifier si la chaîne contient "http://" ou "https://"
+    // On cache la miniature youtube
+    $("#documentThumbnail").html("");
+
+    // Vérifier si la chaîne contient "http://" ou "https://"
     if (regex.test(documentLink)) {
         // Vérifier si le lien est un lien youtube
-        if (documentLink.includes("youtube.com")) {
+        if (documentLink.includes("youtube.com") || documentLink.includes("youtu.be")) {
             console.log("youtube site");
             //https://www.youtube.com/watch?v=JX1gUaRydFo
-            
-            // Récupérer le début de l'ID de la vidéo
-            let videoId = getYoutubeID(documentLink.split("v=")[1]);
+            //https://youtu.be/JX1gUaRydFo?si=2ps9vIu7AiNgGm1X
 
             // Récupérer les informations de la vidéo
             //getYoutubeInformations(videoId);
 
-            // Récuperer la miniature de la vidéo
-            // let videoThumbnail = `https://img.youtube.com/vi/${videoId}/default.jpg`;
-            // let videoThumbnail = "https://img.youtube.com/vi/" + videoId + "/0.jpg";
-            // document.getElementById("documentThumbnail").src = videoThumbnail;
-            // var youtubeUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-            afficherMiniatureYoutube(documentLink);
+            let videoID = getYoutubeVideoId(url);
 
-        } else if (documentLink.includes("youtu.be")) {
-            console.log("youtube mobile");
-            //https://youtu.be/JX1gUaRydFo?si=2ps9vIu7AiNgGm1X
-
-            // Récupérer le début de l'ID de la vidéo
-            let videoId = getYoutubeID(documentLink.split("be/")[1]);
-        } else if (documentLink.includes(".pdf")) {
+            if(videoID != lastVideoID) {
+                lastVideoID = videoID;
+                afficherMiniatureYoutube(documentLink);
+            }            
+        } else if (documentLink.includes(".pdf")) {            
             if (documentLink.includes("dblp.org")) {
                 console.log("dblp site");
             } else {
@@ -162,38 +148,16 @@ function getYoutubeVideoId(url) {
 }
 
 // Fonction pour afficher l'image miniature de la vidéo YouTube
-function afficherMiniatureYoutube(url) {
-    var videoId = getYoutubeVideoId(url);
-    if (videoId) {
-        // Afficher l'image miniature dans un élément HTML
-        $.ajax({
-            url: "/miniature?id=" + videoId,
-            type: "GET",
-            success: function(response) {
-                $("#documentThumbnail").html(response); // Insérer le contenu récupéré dans la div
-            },
-            error: function(xhr, status, error) {
-                console.error("Erreur lors du chargement de l'image miniature: " + error);
-            }
-        });
-    }
-}
-
-/*
-
-function chargerFormulaire() {
+function afficherMiniatureYoutube(url) {    
+    // Afficher l'image miniature dans un élément HTML
     $.ajax({
-        url: "/formulaire", // URL du fichier contenant le formulaire
+        url: "/miniature?id=" + videoId,
         type: "GET",
         success: function(response) {
-            $("#formulaireContainer").html(response); // Insérer le contenu récupéré dans la div
-            attacherEvenement(); // Appeler la fonction pour attacher l'événement après avoir chargé le formulaire
-            document.getElementById("buttonFormulaire").style.display = "none";
+            $("#documentThumbnail").html(response); // Insérer le contenu récupéré dans la div
         },
         error: function(xhr, status, error) {
-            console.error("Erreur lors du chargement du formulaire: " + error);
+            console.error("Erreur lors du chargement de l'image miniature: " + error);
         }
     });
 }
-
-*/
