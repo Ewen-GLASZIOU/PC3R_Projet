@@ -2,9 +2,11 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -27,6 +29,96 @@ type Content struct {
 	Videos   []string
 	Articles []string
 }
+
+/* // Save
+func getDomaine() ([]Domaine, error) {
+	log.Println("Connexion à la base de données...")
+	db, err := sql.Open("mysql", "avnadmin:AVNS_x1AB4PkPIRzS-yIr_bP@tcp(learnhub-learnhub.b.aivencloud.com:15055)/learnhub")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	// On vérifie que la connexion à la base de données est réussie
+	err = db.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// On exécute notre requête SQL pour obtenir les domaines
+	rows, err := db.Query("SELECT nom from domaine order by id")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Créer un tableau pour stocker les résultats
+	var domaines []Domaine
+
+	// Parcourir les lignes de résultats
+	for rows.Next() {
+		var nomDomaine string
+		// Scanner la valeur de la colonne dans une variable
+		err := rows.Scan(&nomDomaine)
+		if err != nil {
+			return nil, err
+		}
+
+		var dom = Domaine{
+			Nom:    nomDomaine,
+			Themes: []string{},
+		}
+
+		// Ajouter le domaine à notre tableau de domaines
+		domaines = append(domaines, dom)
+	}
+
+	// WORK
+	// Afficher les résultats
+	// log.Println("Résultats:")
+	// for _, domaine := range domaines {
+	// 	log.Println(domaine.Nom)
+	// }
+
+	// Vérifier s'il y a des erreurs lors de l'itération des résultats
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// On exécute notre requête SQL pour obtenir tous les thèmes
+	rows, err = db.Query("SELECT nom, id_domaine from theme order by id")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Parcourir les lignes de résultats
+	for rows.Next() {
+		var nomTheme string
+		var idDomaine int
+		// Scanner la valeur de la colonne dans une variable
+		err := rows.Scan(&nomTheme, &idDomaine)
+		if err != nil {
+			return nil, err
+		}
+
+		// Ajouter le theme à notre tableau de themes du tableau de domaines
+		domaines[idDomaine-1].Themes = append(domaines[idDomaine-1].Themes, nomTheme)
+	}
+
+	// WORK
+	// Afficher les résultats
+	// log.Println("Résultats:")
+	// for _, domaine := range domaines {
+	// 	log.Println(domaine.Nom)
+	// 	for _, theme := range domaine.Themes {
+	// 		log.Println(theme)
+	// 	}
+	// }
+
+	return domaines, nil
+}
+*/
 
 func getDomaine() ([]Domaine, error) {
 	log.Println("Connexion à la base de données...")
@@ -114,6 +206,42 @@ func getDomaine() ([]Domaine, error) {
 	// }
 
 	return domaines, nil
+}
+
+func generateJsonDomaines() {
+	// Récupération des domaines de la BDD
+	domaines, err := getDomaine()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	// Encodage des données en JSON
+	jsonData, err2 := json.Marshal(domaines)
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+
+	// Écriture des données JSON dans un fichier
+	err = os.WriteFile("static/domaines.json", jsonData, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func extractDomainesJSON() []Domaine {
+	// Lecture du fichier JSON
+	jsonData, err := os.ReadFile("static/domaines.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Décodage des données JSON dans une liste de structures Domaine
+	var domaines []Domaine
+	err = json.Unmarshal(jsonData, &domaines)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return domaines
 }
 
 func getContent(query string) Content {
@@ -224,11 +352,8 @@ func main() {
 			return
 		}
 
-		dom, err2 := getDomaine()
-
-		if err2 != nil {
-			panic(err.Error())
-		}
+		// Récupération des domaines pour le menu
+		dom := extractDomainesJSON()
 
 		// Données à insérer dans le modèle HTML
 		data := PageData{
@@ -238,6 +363,9 @@ func main() {
 			Domaine:   dom,
 			Content:   content,
 		}
+
+		// TODO : make an add domaines and themes form
+		// generateJsonDomaines()
 
 		// Exécuter le modèle avec les données fournies
 		err = tmpl.Execute(w, data)
@@ -251,9 +379,7 @@ func main() {
 	http.HandleFunc("/formulaire", func(w http.ResponseWriter, r *http.Request) {
 		handler(w, r, "formulaire.html")
 	})
-	http.HandleFunc("/null", func(w http.ResponseWriter, r *http.Request) {
-		handler(w, r, "null.html")
-	})
+
 	// 127.0.0.1:8080/miniature?id=JX1gUaRydFo
 	http.HandleFunc("/miniature", func(w http.ResponseWriter, r *http.Request) {
 		tmpl := template.Must(template.ParseFiles("miniature.html"))
