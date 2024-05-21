@@ -30,6 +30,16 @@ type Content struct {
 	Articles []string
 }
 
+type Document struct {
+	Lien           string `json:"documentLink"`
+	Titre          string `json:"documentTitle"`
+	Auteur         string `json:"documentAuthors"`
+	Date           string `json:"documentDate"`
+	Theme          string `json:"documentTheme"`
+	IdTypeDocument int    `json:"documentType"`
+	// IdPostant       int `json:"
+}
+
 /* // Save
 func getDomaine() ([]Domaine, error) {
 	log.Println("Connexion à la base de données...")
@@ -415,6 +425,32 @@ func main() {
 				return
 			}
 
+		} else if r.Method == "PUT" {
+			log.Println("PUT détecté")
+
+			var document Document
+			if err := json.NewDecoder(r.Body).Decode(&document); err != nil {
+				http.Error(w, "Données JSON invalides", http.StatusBadRequest)
+				log.Println("Erreur de décodage :", err)
+				return
+			}
+			defer r.Body.Close()
+
+			// Répondre avec les données reçues
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(document)
+			log.Printf("Reçu : %+v\n", document)
+
+			// Insertion dans la base de données
+			/*_, err := db.Exec("INSERT INTO document (lien, titre, auteur, id_postant, id_theme, id_type_document) values (?, ?, ?, 1, ?, ?)", document.Lien, document.Titre, document.Auteur, document.IdTheme, document.IdTypeDocument)
+			if err != nil {
+				http.Error(w, "Erreur lors de l'insertion en base de données", http.StatusInternalServerError)
+				log.Println("Erreur d'insertion :", err)
+				return
+			}*/
+
+			log.Println(document)
 		} else {
 			// r.ParseForm()
 			// firstname = r.FormValue("firstname")

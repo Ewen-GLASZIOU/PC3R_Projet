@@ -3,7 +3,24 @@ $(document).ready(function(){
     // Appel de la fonction pour charger le formulaire au chargement de la page
     // chargerFormulaire();
     attacherEvenement();
+    // loadJsonDomaines();
 });
+
+let dataJSON = null;
+let idTypeDocument = null;
+
+// Fonction de chargement du JSON des domaines et thèmes pour les combobox
+function loadJsonDomaines() {
+    // Charger et parser le JSON
+    fetch('static/domaines.json')
+    .then(response => response.json())
+    .then(data => {
+        dataJSON = data;
+    })
+    .catch(error => {
+        console.error('Erreur de chargement du JSON:', error);
+    });
+}
 
 // Fonction pour charger le formulaire via AJAX
 function chargerFormulaire() {
@@ -14,6 +31,7 @@ function chargerFormulaire() {
             $("#formulaireContainer").html(response); // Insérer le contenu récupéré dans la div
             attacherEvenement(); // Appeler la fonction pour attacher l'événement après avoir chargé le formulaire
             document.getElementById("buttonFormulaire").style.display = "none";
+            editSelect();
         },
         error: function(xhr, status, error) {
             console.error("Erreur lors du chargement du formulaire: " + error);
@@ -32,6 +50,11 @@ function attacherEvenement() {
         // Appeler la fonction lorsque du texte est collé dans l'input
         checkLink();
     });
+
+    $("#buttonFormulaire").on("click", function() {
+        // Appeler la fonction lorsque l'on souhaite ajouter un document
+        loadJsonDomaines();
+    });    
 }
 
 function getYoutubeID(videoIdPiece) {
@@ -86,6 +109,7 @@ function checkLink() {
     if (regex.test(documentLink)) {
         // Vérifier si le lien est un lien youtube
         if (documentLink.includes("youtube.com") || documentLink.includes("youtu.be")) {
+            idTypeDocument = 1;
             console.log("youtube site");
             //https://www.youtube.com/watch?v=JX1gUaRydFo
             //https://youtu.be/JX1gUaRydFo?si=2ps9vIu7AiNgGm1X
@@ -99,7 +123,8 @@ function checkLink() {
                 getYoutubeInformations(videoId);
                 afficherMiniatureYoutube(videoId);
             }            
-        } else if (documentLink.includes(".pdf")) {            
+        } else if (documentLink.includes(".pdf")) {   
+            idTypeDocument = 2;         
             if (documentLink.includes("dblp.org")) {
                 console.log("dblp site");
             } else {
@@ -116,25 +141,63 @@ function checkLink() {
 
 function validerFormulaire() {
     // Récupérer la valeur du lien de la vidéo
-    let documentLink = document.getElementById("documentLink").value;
-    
-    let documentTitle = "Titre de la vidéo";
-    let documentAuthors = "Auteurs de la vidéo";
-    let documentDate = "Date de la vidéo";
+    let formData = {
+        documentLink: document.getElementById("documentLink").value,
+        documentTitle: document.getElementById("documentTitle").value,
+        documentAuthors: document.getElementById("documentAuthors").value,
+        documentDate: document.getElementById("documentDate").value,
+        // documentDomaine: document.getElementById("domaine-select").value,
+        documentTheme: document.getElementById("theme-select").value,
+        documentType: idTypeDocument
+    }
+
+    console.log(formData);
+
+    // Envoie la requête PUT avec fetch
+    fetch('/', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Success:', data);
+        alert('Données envoyées avec succès');
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        alert('Erreur lors de l\'envoi des données');
+    });
+
+    // let documentLink = document.getElementById("documentLink").value;
+    // let documentTitle = document.getElementById("documentTitle").value;
+    // let documentAuthors = document.getElementById("documentAuthors").value;
+    // let documentDate = document.getElementById("documentDate").value;
+    // let documentDomaine = document.getElementById("domaine-select").value;
+    // let documentTheme = document.getElementById("theme-select").value;
+    // let documentType = idTypeDocument;
+
+    // let documentTitle = "Titre de la vidéo";
+    // let documentAuthors = "Auteurs de la vidéo";
+    // let documentDate = "Date de la vidéo";
 
     // // document.getElementById("documentTitle").disabled = false;
     
     // Mettre à jour les champs de titre, auteurs et date avec les informations récupérées
     // document.getElementById("documentLink").value = "videoTitle";
-    document.getElementById("documentTitle").value = documentLink;
+    // document.getElementById("documentTitle").value = documentLink;
 
-    document.getElementById("documentAuthors").value = documentAuthors;
-    document.getElementById("documentDate").value = documentDate;
+    // document.getElementById("documentAuthors").value = documentAuthors;
+    // document.getElementById("documentDate").value = documentDate;
+
 }
 
 function resetFormulaire() {
     // Réinitialiser les champs du formulaire
     document.getElementById("documentForm").reset();
+    document.getElementById("documentThumbnail").innerHTML = "";
 }
 
 // Fonction pour extraire l'identifiant de la vidéo YouTube à partir de l'URL
@@ -161,3 +224,36 @@ function afficherMiniatureYoutube(videoId) {
         }
     });
 }
+
+
+function editSelect() {
+    const selectDomaine = document.getElementById('domaine-select');
+
+    const selectTheme = document.getElementById('theme-select');
+
+    // Populer les options du select pour les domaines
+    dataJSON.forEach(domaine => {
+        const option = document.createElement('option');
+        option.value = domaine.Nom;
+        option.textContent = domaine.Nom;
+        selectDomaine.appendChild(option);
+    });
+
+    // Écouter les changements de sélection du domaine
+    selectDomaine.addEventListener('change', () => {
+        // Effacer les options existantes du select pour les thèmes
+        selectTheme.innerHTML = '<option value="">--Sélectionnez un thème--</option>';
+
+        // Trouver le domaine sélectionné
+        const selectedDomaine = dataJSON.find(domaine => domaine.Nom === selectDomaine.value);
+
+        // Ajouter les options du select pour les thèmes du domaine sélectionné
+        selectedDomaine.Themes.forEach(theme => {
+            const option = document.createElement('option');
+            option.value = theme;
+            option.textContent = theme;
+            selectTheme.appendChild(option);
+        });
+    });
+}
+

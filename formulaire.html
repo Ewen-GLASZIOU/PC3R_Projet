@@ -12,13 +12,13 @@
 <form id="documentForm">
     <label for="documentLink">Lien du document :</label><br>
     <!-- <input onpaste="validerFormulaire()" type="text" id="documentLink" name="documentLink"> <- à coller <br><br> -->
-    <input type="text" id="documentLink" name="documentLink"><br><br>
+    <input type="text" id="documentLink" name="documentLink" required><br><br>
     
     <label for="documentTitle">Titre :</label><br>
-    <input type="text" id="documentTitle" name="documentTitle" disabled><br><br>
+    <input type="text" id="documentTitle" name="documentTitle" required disabled><br><br>
     
     <label for="documentAuthors">Auteurs :</label><br>
-    <input type="text" id="documentAuthors" name="documentAuthors" disabled><br><br>
+    <input type="text" id="documentAuthors" name="documentAuthors" required disabled><br><br>
     
     <label for="documentDate">Date :</label><br>
     <input type="text" id="documentDate" name="documentDate" disabled><br><br>
@@ -27,15 +27,13 @@
     <div id="documentThumbnail"></div><br><br>
     
     <label for="domaineDocument">Domaine :</label><br>
-    <select name="domaines" id="domaine-select" disabled>
-        <option value="">--Choisissez une option--</option>
-        <option value="informatique">Informatique</option>
+    <select name="domaines" id="domaine-select" required>
+        <option value="">--Sélectionnez un domaine--</option>
     </select><br><br>
     
     <label for="themeDocument">Theme :</label><br>
-    <select name="themes" id="theme-select" disabled>
-        <option value="">--Choisissez une option--</option>
-        <!-- <option value="algo">Algo</option> -->
+    <select name="themes" id="theme-select" required>
+        <option value="">--Sélectionnez un thème--</option>
     </select><br><br>
 
     <button onclick="validerFormulaire()" type="button" id="ajouterBtn">Ajouter</button>
