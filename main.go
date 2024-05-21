@@ -442,13 +442,25 @@ func main() {
 			json.NewEncoder(w).Encode(document)
 			log.Printf("Reçu : %+v\n", document)
 
+			// Récupération de l'id du theme
+			var idTheme int
+			query := "SELECT id FROM theme WHERE nom = ?"
+			err := db.QueryRow(query, document.Theme).Scan(&idTheme)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				log.Println("Erreur récupération id du thème :", err)
+				return
+			}
+
+			log.Println("id du theme : ?", idTheme)
+
 			// Insertion dans la base de données
-			/*_, err := db.Exec("INSERT INTO document (lien, titre, auteur, id_postant, id_theme, id_type_document) values (?, ?, ?, 1, ?, ?)", document.Lien, document.Titre, document.Auteur, document.IdTheme, document.IdTypeDocument)
+			_, err = db.Exec("INSERT INTO document (lien, titre, auteur, id_postant, id_theme, id_type_document) values (?, ?, ?, 1, ?, ?)", document.Lien, document.Titre, document.Auteur, idTheme, document.IdTypeDocument)
 			if err != nil {
 				http.Error(w, "Erreur lors de l'insertion en base de données", http.StatusInternalServerError)
-				log.Println("Erreur d'insertion :", err)
+				log.Println("Erreur d'insertion du document :", err)
 				return
-			}*/
+			}
 
 			log.Println(document)
 		} else {

@@ -170,28 +170,6 @@ function validerFormulaire() {
         console.error('Error:', error);
         alert('Erreur lors de l\'envoi des données');
     });
-
-    // let documentLink = document.getElementById("documentLink").value;
-    // let documentTitle = document.getElementById("documentTitle").value;
-    // let documentAuthors = document.getElementById("documentAuthors").value;
-    // let documentDate = document.getElementById("documentDate").value;
-    // let documentDomaine = document.getElementById("domaine-select").value;
-    // let documentTheme = document.getElementById("theme-select").value;
-    // let documentType = idTypeDocument;
-
-    // let documentTitle = "Titre de la vidéo";
-    // let documentAuthors = "Auteurs de la vidéo";
-    // let documentDate = "Date de la vidéo";
-
-    // // document.getElementById("documentTitle").disabled = false;
-    
-    // Mettre à jour les champs de titre, auteurs et date avec les informations récupérées
-    // document.getElementById("documentLink").value = "videoTitle";
-    // document.getElementById("documentTitle").value = documentLink;
-
-    // document.getElementById("documentAuthors").value = documentAuthors;
-    // document.getElementById("documentDate").value = documentDate;
-
 }
 
 function resetFormulaire() {
@@ -224,7 +202,6 @@ function afficherMiniatureYoutube(videoId) {
         }
     });
 }
-
 
 function editSelect() {
     const selectDomaine = document.getElementById('domaine-select');
