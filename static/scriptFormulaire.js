@@ -51,6 +51,13 @@ function attacherEvenement() {
         checkLink();
     });
 
+    $("#documentDate").on("input", function() {
+        // Appeler la fonction lorsque du texte est collé dans l'input
+        console.log(document.getElementById("documentDate").value);
+    });
+
+    
+
     $("#buttonFormulaire").on("click", function() {
         // Appeler la fonction lorsque l'on souhaite ajouter un document
         loadJsonDomaines();
@@ -73,6 +80,7 @@ function getYoutubeInformations(videoId) {
             let videoTitle = response.items[0].snippet.title;
             let videoAuthors = response.items[0].snippet.channelTitle;
             let videoDate = response.items[0].snippet.publishedAt;
+            videoDate = videoDate.substring(0, 10); // On ne garde que la date pas le temps
 
             // Mettre à jour les champs de titre, auteurs et date avec les informations récupérées
             document.getElementById("documentTitle").value = videoTitle;
@@ -108,6 +116,7 @@ function checkLink() {
     // Vérifier si la chaîne contient "http://" ou "https://"
     if (regex.test(documentLink)) {
         // Vérifier si le lien est un lien youtube
+        document.getElementById('documentDate').setAttribute('type', 'text');
         if (documentLink.includes("youtube.com") || documentLink.includes("youtu.be")) {
             idTypeDocument = 1;
             console.log("youtube site");
@@ -123,24 +132,41 @@ function checkLink() {
                 getYoutubeInformations(videoId);
                 afficherMiniatureYoutube(videoId);
             }            
-        } else if (documentLink.includes(".pdf")) {   
-            idTypeDocument = 2;         
-            if (documentLink.includes("dblp.org")) {
-                console.log("dblp site");
-            } else {
-                // alert("Veuillez entrer un lien valide vers une vidéo YouTube ou un document DBLP.");
-                console.log("other site");
-                document.getElementById("documentTitle").disabled = false;
-                document.getElementById("documentAuthors").disabled = false;
-                document.getElementById("documentDate").disabled = false;
-            }
+        // } else if (documentLink.includes(".pdf")) { //option pour des pdf qui n'est au final pas util
+        //     idTypeDocument = 2;         
+        //     if (documentLink.includes("dblp.org")) {
+        //         console.log("dblp site");
+        //     } else {
+        //         // alert("Veuillez entrer un lien valide vers une vidéo YouTube ou un document DBLP.");
+        //         console.log("other site");
+        //         document.getElementById("documentTitle").disabled = false;
+        //         document.getElementById("documentAuthors").disabled = false;
+        //         document.getElementById("documentDate").disabled = false;
+        //     }
+        // }
+        } else { //option pour des pdf qui n'est au final pas util
+            idTypeDocument = 2; //on considère que c'est un document
+            console.log("other site");
+            document.getElementById("documentTitle").disabled = false;
+            document.getElementById("documentAuthors").disabled = false;
+            document.getElementById("documentDate").disabled = false;
+            // $("#documentDate").html("<input type='date'></input>");
+            document.getElementById('documentDate').setAttribute('type', 'date');
         }
     }
 }
 
+function formulaireValidationNonVide() {
+    return document.getElementById("documentLink").value != "" && document.getElementById("documentTitle").value != "" && document.getElementById("documentAuthors").value != "" && document.getElementById("documentDate").value != "" && document.getElementById("theme-select").value != "--Sélectionnez un thème--";
+}
 
 function validerFormulaire() {
     // Récupérer la valeur du lien de la vidéo
+    if(!formulaireValidationNonVide()) {
+        alert('Veuillez remplir tous les champs.');
+        return 
+    }
+
     let formData = {
         documentLink: document.getElementById("documentLink").value,
         documentTitle: document.getElementById("documentTitle").value,
@@ -150,8 +176,6 @@ function validerFormulaire() {
         documentTheme: document.getElementById("theme-select").value,
         documentType: idTypeDocument
     }
-
-    console.log(formData);
 
     // Envoie la requête PUT avec fetch
     fetch('/', {
@@ -164,11 +188,11 @@ function validerFormulaire() {
     .then(response => response.json())
     .then(data => {
         console.log('Success:', data);
-        alert('Données envoyées avec succès');
+        alert('Le document a bien été ajouté.');
     })
     .catch((error) => {
         console.error('Error:', error);
-        alert('Erreur lors de l\'envoi des données');
+        alert('Ce document est déjà présent sur notre site.');
     });
 }
 

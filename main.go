@@ -452,10 +452,10 @@ func main() {
 				return
 			}
 
-			log.Println("id du theme : ?", idTheme)
+			log.Println("id du theme : ", idTheme)
 
 			// Insertion dans la base de données
-			_, err = db.Exec("INSERT INTO document (lien, titre, auteur, id_postant, id_theme, id_type_document) values (?, ?, ?, 1, ?, ?)", document.Lien, document.Titre, document.Auteur, idTheme, document.IdTypeDocument)
+			_, err = db.Exec("INSERT INTO document (lien, titre, auteur, id_postant, id_theme, id_type_document, date) values (?, ?, ?, 1, ?, ?, ?)", document.Lien, document.Titre, document.Auteur, idTheme, document.IdTypeDocument, document.Date)
 			if err != nil {
 				http.Error(w, "Erreur lors de l'insertion en base de données", http.StatusInternalServerError)
 				log.Println("Erreur d'insertion du document :", err)
