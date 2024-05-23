@@ -8,80 +8,83 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>    
 </head>
 <body>
-    <div class="sidebar">
-        <div class="user-profile">
-            <img src="/static/Images/user.png" alt="User Profile Picture">
-            <!-- <div id="user-name"> {{printf "%s" .Name}} </div> -->
-            <div id="user-name"> {{.Firstname}} {{.Name}} </div>
+    <header>
+        <h1>LearnHub</h1>
+    </header>
+    <main>
+        <div class="sidebar">
+            <div class="user-profile">
+                <img src="/static/Images/user.png" alt="User Profile Picture">
+                <div id="user-name"> {{.Firstname}} {{.Name}} </div>
+            </div>
+            <div class="domain-list">
+                <h2>Domaines</h2>
+                <ul>
+                    {{ range .Domaine }}
+                    <li>{{ .Nom }}
+                        <ul>
+                            {{ range .Themes }}
+                                <li>{{ . }}</li>
+                            {{ end }}
+                        </ul>
+                    </li>
+                    {{ end }}
+                </ul>
+            </div>
         </div>
-        <div class="domain-list">
-            <h2>Domaines</h2>
-            <ul>
-                {{ range .Domaine }}
-                <li>{{ .Nom }}
-                    <ul>
-                        {{ range .Themes }}
-                            <li>{{ . }}</li>
-                        {{ end }}
-                    </ul>
-                </li>
-                {{ end }}
-            </ul>
+
+        <div class="content-wrapper">
+            <form id="searchForm" action="/" method="POST">
+                <input type="search" id="searchBar" name="query" placeholder="Rechercher...">
+                <button type="submit">Recherche</button>
+            </form>
+
+            <div class="main-content">
+	        <!-- Le contenu principal de notre page -->
+	        <!-- <p>{{.Content.Videos}}</p> -->
+		        {{- if .Content.Videos }}
+		            <h2>Videos</h2>
+		                {{- range .Content.Videos }}
+		                    <!-- <li>{{ .Titre }}</li> -->
+		                    <a href={{.Lien}}>
+		                        <img id="documentThumbnail2" src="{{.Miniature}}" alt="Description de l'image">
+		                        <!-- <script>afficherMiniatureYoutube("JX1gUaRydFo")</script> -->
+		                        <!-- <script>
+		                            $.ajax({
+		                                url: "/miniature?id=JX1gUaRydFo",
+		                                type: "GET",
+		                                success: function(response) {
+		                                    $("#documentThumbnail2").html(response); // Insérer le contenu récupéré dans la div
+		                                },
+		                                error: function(xhr, status, error) {
+		                                    console.error("Erreur lors du chargement de l'image miniature: " + error);
+		                                }
+		                            });
+		                        </script> -->
+		                    </a>
+		                {{- end }}
+		        {{- end }}
+		        <!-- <p>{{.Content.Articles}}</p> -->
+		        {{- if .Content.Articles }}
+		            <h2>Videos</h2>
+		            <ul>
+		                {{- range .Content.Articles }}
+		                    <li>{{ .Titre }}</li>
+		                {{- end }}
+		            </ul>
+		        {{- end }}
+		    </div>
+
+            <button onclick="chargerFormulaire()" id="buttonFormulaire" type="button">Add</button>
+            <div id="formulaireContainer">
+                <!-- Le contenu du formulaire sera inséré ici via AJAX -->
+            </div>
         </div>
-    </div>
-
-    <form id="searchForm" action="/" method="POST">
-        <input type="search" id="searchBar" name="query" placeholder="Rechercher...">
-        <button type="submit">Recherche</button>
-    </form>
-
-    <div class="main-content">
-        <!-- Le contenu principal de notre page -->
-        <!-- <p>{{.Content.Videos}}</p> -->
-        {{- if .Content.Videos }}
-            <h2>Videos</h2>
-                {{- range .Content.Videos }}
-                    <!-- <li>{{ .Titre }}</li> -->
-                    <a href={{.Lien}}>
-                        <img id="documentThumbnail2" src="{{.Miniature}}" alt="Description de l'image">
-                        <!-- <script>afficherMiniatureYoutube("JX1gUaRydFo")</script> -->
-                        <!-- <script>
-                            $.ajax({
-                                url: "/miniature?id=JX1gUaRydFo",
-                                type: "GET",
-                                success: function(response) {
-                                    $("#documentThumbnail2").html(response); // Insérer le contenu récupéré dans la div
-                                },
-                                error: function(xhr, status, error) {
-                                    console.error("Erreur lors du chargement de l'image miniature: " + error);
-                                }
-                            });
-                        </script> -->
-                    </a>
-                {{- end }}
-        {{- end }}
-        <!-- <p>{{.Content.Articles}}</p> -->
-        {{- if .Content.Articles }}
-            <h2>Videos</h2>
-            <ul>
-                {{- range .Content.Articles }}
-                    <li>{{ .Titre }}</li>
-                {{- end }}
-            </ul>
-        {{- end }}
-    </div>
-
-    <button onclick="chargerFormulaire()" id="buttonFormulaire" type="button" >Add</button>
-    <div id="formulaireContainer">
-        <!-- Le contenu du formulaire sera inséré ici via AJAX -->
-    </div>
-    <!-- <div class="add button" >
-        <button type="submit">Add</button>
-    </div> -->
-
-    <div class="footer">
+    </main>
+    <footer class="footer">
         <p>LearnHub; 2024</p>
-    </div>
+    </footer>
+    
     <script src="/static/script.js"></script>
     <script src="/static/scriptFormulaire.js"></script>
 </body>
