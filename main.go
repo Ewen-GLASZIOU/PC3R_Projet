@@ -25,9 +25,17 @@ type Domaine struct {
 	Themes []string
 }
 
+type DocumentVisiable struct {
+	Lien      string
+	Titre     string
+	Auteur    string
+	Date      string
+	Miniature string
+}
+
 type Content struct {
-	Videos   []string
-	Articles []string
+	Videos   []DocumentVisiable
+	Articles []DocumentVisiable
 }
 
 type Document struct {
@@ -273,38 +281,45 @@ func getContent(query string) Content {
 	search := "'%" + query + "%'"
 
 	// On exécute nos requêtes SQL pour obtenir les documents
-	rowsVideos, err1 := db.Query("select lien from learnhub.document where (titre LIKE " + search + " or auteur LIKE " + search + ") AND id_type_document = 1")
+	// rowsVideos, err1 := db.Query("select lien, titre, auteur, date_document from learnhub.document")
+	// rowsVideos, err1 := db.Query("select lien,titre,auteur,date_document from learnhub.document")
+	rowsVideos, err1 := db.Query("select lien,titre,auteur,date_document from learnhub.document where (titre LIKE " + search + " or auteur LIKE " + search + ") AND id_type_document = 1")
 	if err1 != nil {
 		return myContent
 	}
 	defer rowsVideos.Close()
 
-	rowsArticles, err2 := db.Query("select lien from learnhub.document where (titre LIKE " + search + " or auteur LIKE " + search + ") AND id_type_document = 2")
+	// rowsArticles, err2 := db.Query("select lien,titre,auteur,date_document from learnhub.document")
+	rowsArticles, err2 := db.Query("select lien,titre,auteur,date_document from learnhub.document where (titre LIKE " + search + " or auteur LIKE " + search + ") AND id_type_document = 2")
 	if err2 != nil {
 		return myContent
 	}
 	defer rowsArticles.Close()
 
 	for rowsVideos.Next() {
-		var lien string
+		var video DocumentVisiable
 
-		err1 := rowsVideos.Scan(&lien)
+		err1 := rowsVideos.Scan(&video.Lien, &video.Titre, &video.Auteur, &video.Date)
+		// err1 := rowsVideos.Scan(&lien, &titre, &auteur, &date)
 		if err1 != nil {
 			return myContent
 		}
 
-		myContent.Videos = append(myContent.Videos, lien)
+		// TODO : delete this
+		video.Miniature = getYoutubeThumbnail(video.Lien)
+		// video.Miniature = "https://img.youtube.com/vi/JX1gUaRydFo/0.jpg"
+		myContent.Videos = append(myContent.Videos, video)
 	}
 
 	for rowsArticles.Next() {
-		var lien string
+		var article DocumentVisiable
 
-		err2 := rowsArticles.Scan(&lien)
+		err2 := rowsArticles.Scan(&article.Lien, &article.Titre, &article.Auteur, &article.Date)
 		if err2 != nil {
 			return myContent
 		}
 
-		myContent.Articles = append(myContent.Articles, lien)
+		myContent.Articles = append(myContent.Articles, article)
 	}
 
 	return myContent
@@ -470,15 +485,15 @@ func main() {
 			// log.Println(firstname)
 			// log.Println(name)
 			query := r.FormValue("query")
-			log.Println("Recherche :", query)
+			if query != "" { // On empeche de faire une recherche vide qui renvoie tous les resultats
+				log.Println("Recherche :", query)
 
-			content = getContent(query)
+				content = getContent(query)
 
-			log.Println(err)
-
-			log.Println("Résultats:")
-			for _, res := range content.Videos {
-				log.Println(res)
+				log.Println("Résultats:")
+				for _, res := range content.Videos {
+					log.Println(res.Titre)
+				}
 			}
 
 			http.Redirect(w, r, "/", http.StatusSeeOther)

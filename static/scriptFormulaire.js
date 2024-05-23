@@ -168,7 +168,7 @@ function validerFormulaire() {
     }
 
     let formData = {
-        documentLink: document.getElementById("documentLink").value,
+        documentLink: getYoutubeVideoId(document.getElementById("documentLink").value),
         documentTitle: document.getElementById("documentTitle").value,
         documentAuthors: document.getElementById("documentAuthors").value,
         documentDate: document.getElementById("documentDate").value,
