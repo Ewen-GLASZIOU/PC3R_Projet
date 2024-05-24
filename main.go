@@ -554,6 +554,19 @@ func main() {
 					log.Printf("Erreur inscription : impossible d'ajouter l'utilisateur", err)
 					// return
 				}
+				idU := 0
+				prenomU := ""
+				nomU := ""
+				queryBDD := "SELECT id,prenom,nom FROM utilisateur WHERE mail = ?"
+				err := db.QueryRow(queryBDD, email, motDePasse).Scan(&idU, &prenomU, &nomU)
+				if err != nil {
+					// http.Error(w, err.Error(), http.StatusInternalServerError)
+					log.Println("Erreur connexion apres inscription")
+					// return
+				}
+				idUtilisateur = idU
+				firstname = prenomU
+				name = nomU
 			} else {
 				// http.Error(w, "Utilisateur deja existant", http.StatusInternalServerError)
 				log.Printf("Erreur inscription : utilisateur deja existant")
