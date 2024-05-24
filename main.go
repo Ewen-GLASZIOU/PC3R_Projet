@@ -404,49 +404,8 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/utilisateur", func(w http.ResponseWriter, r *http.Request) {
-		// Récupération des domaines pour le menu
-		// dom := extractDomainesJSON()
-
-		// Extraire les paramètres de la requête
-		formType := r.FormValue("formType")
-
-		// nom := r.FormValue("nom")
-		// prenom := r.FormValue("prenom")
-		// dateNaissance := r.FormValue("date-de-naissance")
-		niveauEducation := r.FormValue("niveauEducation")
-		// linkedin := r.FormValue("linkedin")
-		// diplome := r.FormValue("diplome")
-		email := r.FormValue("email")
-		motDePasse := r.FormValue("motDePasse")
-		log.Println("La on detecte un email et un mdp :", email, motDePasse)
-		log.Println("Niveau étude :", niveauEducation)
-		log.Println("formType :", formType)
-		// if formType == "Inscription" {
-		log.Println("POST détecté, inscription requise")
-
-		// On vérifie si l'utilisateur existe
-		queryCheckBDD := "SELECT COUNT(ID) FROM utilisateur WHERE mail=?"
-		numberMail := -1
-		_ = db.QueryRow(queryCheckBDD, email).Scan(&numberMail)
-		if numberMail == 0 {
-			// On l'ajoute le cas échéant
-			// queryBDD := "INSERT INTO utilisateur (mail,nom,prenom,mot_de_passe,date_naissance,id_niveau_etude,lien_linkedin) VALUES (?, ?, ?, ?, ?, ?, ?)"
-			// // queryBDD := "SELECT id,prenom,nom FROM utilisateur WHERE mail = ? AND mot_de_passe = ?"
-			// err := db.QueryRow(queryBDD, email, prenom, nom, motDePasse, dateNaissance, niveauEducation, linkedin).Scan(&idUtilisateur, &firstname, &name)
-
-			// if err != nil {
-			// 	// http.Error(w, err.Error(), http.StatusInternalServerError)
-			// 	log.Printf("Erreur inscription : impossible d'ajouter l'utilisateur")
-			// 	return
-			// }
-		} else {
-			// http.Error(w, "Utilisateur deja existant", http.StatusInternalServerError)
-			log.Printf("Erreur inscription : utilisateur deja existant")
-			// return
-		}
-
-		log.Println("utilisateur ", r.FormValue("email"), r.Method)
+	http.HandleFunc("/deconnexion", func(w http.ResponseWriter, r *http.Request) {
+		idUtilisateur = 0
 
 		// Données à insérer dans le modèle HTML
 		data := PageData{
@@ -458,16 +417,12 @@ func main() {
 			Content:   content,
 		}
 
-		// TODO : make an add domaines and themes form
-		// generateJsonDomaines()
-
 		// Exécuter le modèle avec les données fournies
 		err = tmpl.Execute(w, data)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		// http.Redirect(w, r, "/", http.StatusSeeOther)
 	})
 
 	// Définir la route pour la page de formulaire
@@ -500,6 +455,8 @@ func main() {
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		var c Content
+		content = c
 		if r.Method == "POST" {
 			log.Println(r.Body, r.PostForm, r.Form)
 			log.Println("utilisateur / ", r.FormValue("email"), r.Method)
