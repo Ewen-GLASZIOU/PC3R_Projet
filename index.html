@@ -17,6 +17,18 @@
                 <img src="/static/Images/user.png" alt="User Profile Picture">
                 <div id="user-name"> {{.Firstname}} {{.Name}} </div>
             </div>
+            <div class="menu">
+                <ul>
+                    <li><a href="/">Accueil</a></li>
+                    <!-- <li><a href="/inscription">S'inscrire</a></li> -->
+                    <!-- <li><a href="/connexion">Se connecter</a></li> -->
+                    <!-- <li><a href="/connexion">Se connecter</a></li> -->
+                    <li><a onclick="chargerInscription()" id="inscription">S'inscrire</a></li>
+                    <li><a onclick="chargerConnexion()" id="connexion">Se connecter</a></li>
+                    <!-- <li><a href="/profil">Profil</a></li> -->
+                    <!-- <li><a href="/deconnexion">Déconnexion</a></li> -->
+                </ul>
+            </div>
             <div class="domain-list">
                 <h2>Domaines</h2>
                 <ul>
@@ -62,8 +74,10 @@
 		            </ul>
 		        {{- end }}
 		    </div>
-
-            <button onclick="chargerFormulaire()" id="buttonFormulaire" type="button">Add</button>
+            {{ .Id }}
+            {{- if ne .Id 0 }}
+                <button onclick="chargerFormulaire()" id="buttonFormulaire" type="button">Add</button>
+            {{- end }}
             <div id="formulaireContainer">
                 <!-- Le contenu du formulaire sera inséré ici via AJAX -->
             </div>

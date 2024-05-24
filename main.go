@@ -16,6 +16,7 @@ type PageData struct {
 	Title     string
 	Firstname string
 	Name      string
+	Id        int
 	Domaine   []Domaine
 	Content   Content
 }
@@ -47,6 +48,9 @@ type Document struct {
 	IdTypeDocument int    `json:"documentType"`
 	// IdPostant       int `json:"
 }
+
+// L'id par défaut d'un utilisateur non connecté
+var idUtilisateur = 0
 
 /* // Save
 func getDomaine() ([]Domaine, error) {
@@ -300,7 +304,6 @@ func getContent(query string) Content {
 		var video DocumentVisiable
 
 		err1 := rowsVideos.Scan(&video.Lien, &video.Titre, &video.Auteur, &video.Date)
-		// err1 := rowsVideos.Scan(&lien, &titre, &auteur, &date)
 		if err1 != nil {
 			return myContent
 		}
@@ -371,7 +374,7 @@ func main() {
 	http.HandleFunc("/aled", func(w http.ResponseWriter, r *http.Request) {
 		// On récupère le nom et prenom de l'utilisateur
 		query := "SELECT prenom, nom FROM utilisateur WHERE id = ?"
-		err := db.QueryRow(query, 1).Scan(&firstname, &name)
+		err := db.QueryRow(query, idUtilisateur).Scan(&firstname, &name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -385,6 +388,32 @@ func main() {
 			Title:     "Accueil",
 			Firstname: firstname,
 			Name:      name,
+			Id:        idUtilisateur,
+			Domaine:   dom,
+			Content:   content,
+		}
+
+		// TODO : make an add domaines and themes form
+		// generateJsonDomaines()
+
+		// Exécuter le modèle avec les données fournies
+		err = tmpl.Execute(w, data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+
+	http.HandleFunc("/utilisateur", func(w http.ResponseWriter, r *http.Request) {
+		// Récupération des domaines pour le menu
+		// dom := extractDomainesJSON()
+
+		// Données à insérer dans le modèle HTML
+		data := PageData{
+			Title:     "Accueil",
+			Firstname: firstname,
+			Name:      name,
+			Id:        idUtilisateur,
 			Domaine:   dom,
 			Content:   content,
 		}
@@ -403,6 +432,14 @@ func main() {
 	// Définir la route pour la page de formulaire
 	http.HandleFunc("/formulaire", func(w http.ResponseWriter, r *http.Request) {
 		handler(w, r, "formulaire.html")
+	})
+	// Définir la route pour la page de connexion
+	http.HandleFunc("/connexion", func(w http.ResponseWriter, r *http.Request) {
+		handler(w, r, "connexion.html")
+	})
+	// Définir la route pour la page d'inscription
+	http.HandleFunc("/inscription", func(w http.ResponseWriter, r *http.Request) {
+		handler(w, r, "inscription.html")
 	})
 
 	// 127.0.0.1:8080/miniature?id=JX1gUaRydFo
@@ -423,12 +460,40 @@ func main() {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
+			// Extraire les paramètres de la requête
+			query := r.URL.Query()
+			// Récupération du type du formulaire
+			formType := query.Get("formType")
+
+			// Différencier les requêtes selon les paramètres
+			if formType == "Connexion" {
+				log.Println("GET détecté, connexion requise")
+				// handler(w, r, "connexion.html")
+				email := query.Get("email")
+				motDePasse := query.Get("motDePasse")
+
+				// On vérifie si l'utilisateur existe
+				queryBDD := "SELECT id,prenom,nom FROM utilisateur WHERE mail = ? AND mot_de_passe = ?"
+				err := db.QueryRow(queryBDD, email, motDePasse).Scan(&idUtilisateur, &firstname, &name)
+
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			} else if formType == "Inscription" {
+				log.Println("GET détecté, inscription requise")
+				// fmt.Fprintf(w, "Received request with param1=anotherValue")
+			} else {
+				log.Println("GET détecté, code requis")
+				// fmt.Fprintf(w, "Received request with different parameters")
+			}
 
 			// Données à insérer dans le modèle HTML
 			data := PageData{
 				Title:     "Accueil",
 				Firstname: firstname,
 				Name:      name,
+				Id:        idUtilisateur,
 				Domaine:   dom,
 				Content:   content,
 			}
@@ -440,44 +505,79 @@ func main() {
 				return
 			}
 
-		} else if r.Method == "PUT" {
-			log.Println("PUT détecté")
+		} else if r.Method == "POST" {
+			// Extraire les paramètres de la requête
+			query := r.URL.Query()
+			formType := query.Get("formType")
+			if formType == "Inscription" {
+				log.Println("POST détecté, inscription requise")
 
-			var document Document
-			if err := json.NewDecoder(r.Body).Decode(&document); err != nil {
-				http.Error(w, "Données JSON invalides", http.StatusBadRequest)
-				log.Println("Erreur de décodage :", err)
-				return
+				nom := query.Get("nom")
+				prenom := query.Get("prenom")
+				dateNaissance := query.Get("date-de-naissance")
+				niveauEducation := query.Get("niveauEducation")
+				linkedin := query.Get("linkedin")
+				// diplome := query.Get("diplome")
+				email := query.Get("email")
+				motDePasse := query.Get("motDePasse")
+
+				// On vérifie si l'utilisateur existe
+				queryCheckBDD := "SELECT ID FROM utilisateur WHERE mail=?"
+				numberMail := -1
+				_ = db.QueryRow(queryCheckBDD, email).Scan(&numberMail)
+				if numberMail == 0 {
+					// On l'ajoute le cas échéant
+					queryBDD := "INSERT INTO utilisateur (mail,nom,prenom,mot_de_passe,date_naissance,id_niveau_etude,lien_linkedin) VALUES (?, ?, ?, ?, ?, ?, ?)"
+					// queryBDD := "SELECT id,prenom,nom FROM utilisateur WHERE mail = ? AND mot_de_passe = ?"
+					err := db.QueryRow(queryBDD, email, prenom, nom, motDePasse, dateNaissance, niveauEducation, linkedin).Scan(&idUtilisateur, &firstname, &name)
+
+					if err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
+				} else {
+					http.Error(w, "Utilisateur deja existant", http.StatusInternalServerError)
+					return
+				}
+			} else if r.Method == "PUT" {
+				log.Println("PUT détecté")
+
+				var document Document
+				if err := json.NewDecoder(r.Body).Decode(&document); err != nil {
+					http.Error(w, "Données JSON invalides", http.StatusBadRequest)
+					log.Println("Erreur de décodage :", err)
+					return
+				}
+				defer r.Body.Close()
+
+				// Répondre avec les données reçues
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode(document)
+				log.Printf("Reçu : %+v\n", document)
+
+				// Récupération de l'id du theme
+				var idTheme int
+				query := "SELECT id FROM theme WHERE nom = ?"
+				err := db.QueryRow(query, document.Theme).Scan(&idTheme)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					log.Println("Erreur récupération id du thème :", err)
+					return
+				}
+
+				log.Println("id du theme : ", idTheme)
+
+				// Insertion dans la base de données
+				_, err = db.Exec("INSERT INTO document (lien, titre, auteur, id_postant, id_theme, id_type_document, date) values (?, ?, ?, 1, ?, ?, ?)", document.Lien, document.Titre, document.Auteur, idTheme, document.IdTypeDocument, document.Date)
+				if err != nil {
+					http.Error(w, "Erreur lors de l'insertion en base de données", http.StatusInternalServerError)
+					log.Println("Erreur d'insertion du document :", err)
+					return
+				}
+
+				log.Println(document)
 			}
-			defer r.Body.Close()
-
-			// Répondre avec les données reçues
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(document)
-			log.Printf("Reçu : %+v\n", document)
-
-			// Récupération de l'id du theme
-			var idTheme int
-			query := "SELECT id FROM theme WHERE nom = ?"
-			err := db.QueryRow(query, document.Theme).Scan(&idTheme)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				log.Println("Erreur récupération id du thème :", err)
-				return
-			}
-
-			log.Println("id du theme : ", idTheme)
-
-			// Insertion dans la base de données
-			_, err = db.Exec("INSERT INTO document (lien, titre, auteur, id_postant, id_theme, id_type_document, date) values (?, ?, ?, 1, ?, ?, ?)", document.Lien, document.Titre, document.Auteur, idTheme, document.IdTypeDocument, document.Date)
-			if err != nil {
-				http.Error(w, "Erreur lors de l'insertion en base de données", http.StatusInternalServerError)
-				log.Println("Erreur d'insertion du document :", err)
-				return
-			}
-
-			log.Println(document)
 		} else {
 			// r.ParseForm()
 			// firstname = r.FormValue("firstname")

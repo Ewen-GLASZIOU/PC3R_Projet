@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulaire d'inscription modifié</title>
-    <link rel="stylesheet" href="static/style.css">
+    <!-- <link rel="stylesheet" href="static/style.css"> -->
 </head>
 <body>
-    <form id="formInscription">
+    <form id="formInscription" method="post">
+        <input type="hidden" name="formType" value="Inscription">
         <label for="nom">*Nom :</label>
         <input type="text" id="nom" name="nom" required>
 
@@ -32,7 +33,7 @@
         <input type="url" id="linkedin" name="linkedin">
 
         <label for="diplome">Diplôme (dépôt de fichier) :</label>
-        <input type="file" id="diplome" name="diplome" accept=".pdf">
+        <input type="file" id="diplome" name="diplome" accept=".pdf" disabled>
 
 
         <label for="email">*Email :</label>

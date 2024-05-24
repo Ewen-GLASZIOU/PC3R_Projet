@@ -39,6 +39,34 @@ function chargerFormulaire() {
     });
 }
 
+// Fonction pour afficher la page de connexion
+function chargerConnexion() {
+    $.ajax({
+        url: "/connexion", // URL du fichier contenant le formulaire
+        type: "GET",
+        success: function(response) {
+            $("#formulaireContainer").html(response); // Insérer le contenu récupéré dans la div
+        },
+        error: function(xhr, status, error) {
+            console.error("Erreur lors du chargement du formulaire: " + error);
+        }
+    });
+}
+
+// Fonction pour afficher la page d'inscription
+function chargerInscription() {
+    $.ajax({
+        url: "/inscription", // URL du fichier contenant le formulaire
+        type: "GET",
+        success: function(response) {
+            $("#formulaireContainer").html(response); // Insérer le contenu récupéré dans la div
+        },
+        error: function(xhr, status, error) {
+            console.error("Erreur lors du chargement du formulaire: " + error);
+        }
+    });
+}
+
 function fermerFormulaire() {
     $("#formulaireContainer").html("");
     document.getElementById("buttonFormulaire").style.display = "block";
