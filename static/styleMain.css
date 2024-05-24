@@ -16,9 +16,7 @@ header {
 }
 
 main {
-    display: grid;
-    grid-template-columns: 200px 1fr; /* Barre latérale 200px, contenu principal prend le reste */
-    flex: 1;
+    display: flex;
     width: 100%;
 }
 
@@ -31,7 +29,8 @@ main {
     flex-direction: column;
     justify-content: flex-start;
     position: sticky;
-    max-width: 300px;
+    min-width: 300px;
+    max-width: 400px;
     margin: 0;
 }
 
@@ -58,6 +57,7 @@ main {
     position: sticky;
     max-width: 300px;
     border: #004080 1px solid;
+    border-radius: 5px;
 }
 
 .menu a {
@@ -87,6 +87,8 @@ main {
 
 /* Styles de base pour la liste */
 .domain-list ul {
+    margin-left: 5px;
+    margin-right: 5px;
     list-style-type: none;
     padding: 0;
     margin: 0;
@@ -99,6 +101,8 @@ main {
     cursor: pointer;
     color: #333; /* Couleur du texte par défaut */
     position: relative; /* Nécessaire pour les sous-menus */
+    border-bottom: 2px solid #4e4e4e;
+    border-radius: 5px;
 }
 
 /* Styles pour les liens */
@@ -106,16 +110,21 @@ main {
     text-decoration: none;
     color: #333;
     display: block;
+    background-color: #ffffff;
 }
-
+.domain-list li{
+    background-color: #ffffff;
+    margin: 5px 10px 5px 10px;
+}
 /* Styles pour les sous-menus */
 .domain-list li ul {
     display: none; /* Cache les sous-menus par défaut */
     position: absolute;
     top: 100%;
     left: 0;
-    background-color: #fff;
-    border: 1px solid #ccc;
+    background-color: #004080;
+    border: 1px solid #4e4e4e;
+    border-radius: 5px;
     padding: 0;
     margin: 0;
     list-style-type: none;
@@ -142,23 +151,27 @@ main {
 
 /* Styles pour les éléments de liste au survol */
 .domain-list li:hover {
-    background-color: #00BFFF; /* Cyan */
+    background-color: #004080; /* Cyan */
     color: white;
 }
 
-
-
-.main-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
 .content-wrapper {
     display: flex;
     flex-direction: column;
     padding: 20px;
     max-height: 100%;
     position: relative;
+    flex: 1;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 10px;
+}
+.content#formulaireContainer {
+    margin-top: 40px;
 }
 
 form#searchForm {
@@ -173,22 +186,26 @@ form#searchForm {
 form#searchForm input[type="search"] {
     flex: auto;
     border: 1px solid #ccc;
-    border-radius: 4px 0 0 4px;
+    border-radius: 5px;
     width: 70%;
     max-width: 70%;
     margin: 10px;
     padding-left: 10px;
     padding-right: 10px;
+    font-size: 20px;
+    font-style: bold;
 }
 
 form#searchForm button {
     border: none;
     background-color: #00BFFF; /* Cyan */
     color: white;
-    border-radius: 0 4px 4px 0;
+    border-radius: 5px;
     cursor: pointer;
     width: 25%;
     margin: 15px;
+    font-style: bold;
+    font-size: 20px;
 }
 
 form#searchForm button:hover {
@@ -200,7 +217,8 @@ form#searchForm button:hover {
     flex-wrap: wrap;
     justify-content: space-around;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    max-width: 1000px;
+    max-width: 1200px;
+    border-radius: 10px;
 }
 
 .container h2{
@@ -211,10 +229,14 @@ form#searchForm button:hover {
     margin-right: 10px;
     background-color: #004080; /* Bleu foncé */
     color: #ffffff;
+    border-radius: 4px;
 }
 
 #articlesContainer {
    margin-top: 40px;
+}
+#articlesContainer a{
+    width: 90%;
 }
 
 #videos {
@@ -236,6 +258,7 @@ form#searchForm button:hover {
     width: 50%;
     height: auto;
     border: #43a1ff 4px solid;
+    border-radius: 5px;
 }
 
 
@@ -279,6 +302,7 @@ input[type="file"] {
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
+    font-size: 20px;
 }
 
 
@@ -294,6 +318,7 @@ a {
     overflow: hidden; /* Cache le contenu débordant */
     margin: 10px;
     max-width: 100%; /* Empêche l'élément de s'étendre au-delà de son conteneur parent */
+    font-size: 16px;
 }
 
 a:hover {
@@ -311,6 +336,7 @@ button {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 18px;
 }
 
 button:hover {
@@ -322,16 +348,17 @@ button:hover {
 button#buttonFormulaire {
     background-color: #129b6d;
     color: white;
-    padding: 5px 10px; /* Réduire la taille du bouton */
+    padding: 10px 40px; /* Réduire la taille du bouton */
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px; /* Réduire la taille de la police */
+    font-size: 20px; /* Réduire la taille de la police */
     display: inline-block;
     width: auto;
-    position: absolute; /* Positionner de manière absolue */
-    bottom: 10px; /* Espace depuis le bas du parent */
-    right: 10px; /* Espace depuis la droite du parent */
+    position: fixed; /* Positionner de manière fixe */
+    bottom: 10px; /* Espace depuis le bas de l'écran */
+    right: 10px; /* Espace depuis la droite de l'écran */
+    z-index: 1000; /* Assure que le bouton est au-dessus des autres éléments */
 }
 
 button#buttonFormulaire:hover {
@@ -346,6 +373,7 @@ button#retourBtn {
 button#retourBtn:hover {
     background-color: #b30000; /* Rouge légèrement plus foncé */
 }
+
 
 .footer {
     background-color: #f0f8ff; /* Bleu clair */

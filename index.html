@@ -51,7 +51,7 @@
                 <button type="submit">Recherche</button>
             </form>
 
-            <div class="main-content">
+            <div class="content" id="main">
 	        <!-- Le contenu principal de notre page -->
 	        <!-- <p>{{.Content.Videos}}</p> -->
                 <div class="container" id="videosContainer">
@@ -84,7 +84,7 @@
             {{- if ne .Id 0 }}
                 <button onclick="chargerFormulaire()" id="buttonFormulaire" type="button">Add</button>
             {{- end }}
-            <div id="formulaireContainer">
+            <div class="content" id="formulaireContainer">
                 <!-- Le contenu du formulaire sera inséré ici via AJAX -->
             </div>
         </div>
