@@ -484,8 +484,20 @@ func main() {
 				log.Println("GET détecté, inscription requise")
 				// fmt.Fprintf(w, "Received request with param1=anotherValue")
 			} else {
-				log.Println("GET détecté, code requis")
-				// fmt.Fprintf(w, "Received request with different parameters")
+				// log.Println("GET détecté, recherche requise")
+				query := r.FormValue("query")
+				// log.Println(query)
+				if query != "" { // On empeche de faire une recherche vide qui renvoie tous les resultats
+					log.Println("Recherche :", query)
+
+					content = getContent(query)
+
+					log.Println("Résultats:")
+					for _, res := range content.Videos {
+						log.Println(res.Titre)
+					}
+					http.Redirect(w, r, "/", http.StatusSeeOther)
+				}
 			}
 
 			// Données à insérer dans le modèle HTML
@@ -584,19 +596,7 @@ func main() {
 			// name = r.FormValue("name")
 			// log.Println(firstname)
 			// log.Println(name)
-			query := r.FormValue("query")
-			if query != "" { // On empeche de faire une recherche vide qui renvoie tous les resultats
-				log.Println("Recherche :", query)
 
-				content = getContent(query)
-
-				log.Println("Résultats:")
-				for _, res := range content.Videos {
-					log.Println(res.Titre)
-				}
-			}
-
-			http.Redirect(w, r, "/", http.StatusSeeOther)
 		}
 	})
 
