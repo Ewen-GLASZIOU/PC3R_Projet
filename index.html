@@ -45,6 +45,7 @@
                 <div class="videoContainer">
                     {{- if .Content.Videos }}
                         <h2>Videos</h2>
+                        <div id="videos">
                             {{- range .Content.Videos }}
                                 <!-- <li>{{ .Titre }}</li> -->
                                 <a href={{.Lien}}>
@@ -52,6 +53,7 @@
                                     {{.Titre}}, {{.Auteur}}
                                 </a>
                             {{- end }}
+                        </div>
                     {{- end }}
                 </div>
 		        <!-- <p>{{.Content.Articles}}</p> -->
