@@ -42,25 +42,29 @@
             <div class="main-content">
 	        <!-- Le contenu principal de notre page -->
 	        <!-- <p>{{.Content.Videos}}</p> -->
-		        {{- if .Content.Videos }}
-		            <h2>Videos</h2>
-		                {{- range .Content.Videos }}
-		                    <!-- <li>{{ .Titre }}</li> -->
-		                    <a href={{.Lien}}>
-		                        <img id="documentThumbnail2" src="{{.Miniature}}" alt="{{.Titre}}">
-                                {{.Titre}}, {{.Auteur}}
-                            </a>
-		                {{- end }}
-		        {{- end }}
+                <div class="videoContainer">
+                    {{- if .Content.Videos }}
+                        <h2>Videos</h2>
+                            {{- range .Content.Videos }}
+                                <!-- <li>{{ .Titre }}</li> -->
+                                <a href={{.Lien}}>
+                                    <img id="documentThumbnail2" src="{{.Miniature}}" alt="{{.Titre}}">
+                                    {{.Titre}}, {{.Auteur}}
+                                </a>
+                            {{- end }}
+                    {{- end }}
+                </div>
 		        <!-- <p>{{.Content.Articles}}</p> -->
-		        {{- if .Content.Articles }}
-		            <h2>Articles</h2>
-		            <ul>
-		                {{- range .Content.Articles }}
-		                    <li><a href={{.Lien}}>{{.Titre}}, {{.Auteur}}</a></li>
-		                {{- end }}
-		            </ul>
-		        {{- end }}
+                <div class="articleContainer">
+                    {{- if .Content.Articles }}
+                        <h2>Articles</h2>
+                        <ul>
+                            {{- range .Content.Articles }}
+                                <li><a href={{.Lien}}>{{.Titre}}, {{.Auteur}}</a></li>
+                            {{- end }}
+                        </ul>
+                    {{- end }}
+                </div>
 		    </div>
 
             <button onclick="chargerFormulaire()" id="buttonFormulaire" type="button">Add</button>
