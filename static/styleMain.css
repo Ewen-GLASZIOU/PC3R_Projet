@@ -125,6 +125,9 @@ form#searchForm button:hover {
     margin-top: 20px;
 }
 
+.videoContainer  a{
+    width: 100%;
+}
 
 form {
     background-color: #ffffff;
@@ -175,10 +178,12 @@ a {
     border: 1px solid #004080;
     border-radius: 5px;
     transition: background-color 0.3s, color 0.3s;
-    text-justify: auto;
-    width: 100%;
+    display: inline-block; /* Permet à l'élément de redimensionner selon le contenu */
+    overflow: hidden; /* Cache le contenu débordant */
     margin: 10px;
+    max-width: 100%; /* Empêche l'élément de s'étendre au-delà de son conteneur parent */
 }
+
 
 a:hover {
     background-color: #004080;
@@ -188,6 +193,7 @@ a:hover {
 img {
     width: 50%;
     height: auto;
+    border: #43a1ff 4px solid;
 }
 
 button#buttonFormulaire {
