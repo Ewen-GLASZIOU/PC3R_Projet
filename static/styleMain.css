@@ -13,11 +13,13 @@ header {
     background-color: #004080; /* Bleu foncé */
     color: #ffffff;
     text-align: center;
+    min-height: 6vh;
 }
 
 main {
     display: flex;
     width: 100%;
+    min-height: 86vh;
 }
 
 
@@ -379,6 +381,7 @@ button#retourBtn:hover {
     background-color: #f0f8ff; /* Bleu clair */
     text-align: center;
     width: 100%;
+    min-height: 4vh;
 }
 
 
