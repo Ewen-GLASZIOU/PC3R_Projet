@@ -408,6 +408,46 @@ func main() {
 		// Récupération des domaines pour le menu
 		// dom := extractDomainesJSON()
 
+		// Extraire les paramètres de la requête
+		formType := r.FormValue("formType")
+
+		// nom := r.FormValue("nom")
+		// prenom := r.FormValue("prenom")
+		// dateNaissance := r.FormValue("date-de-naissance")
+		niveauEducation := r.FormValue("niveauEducation")
+		// linkedin := r.FormValue("linkedin")
+		// diplome := r.FormValue("diplome")
+		email := r.FormValue("email")
+		motDePasse := r.FormValue("motDePasse")
+		log.Println("La on detecte un email et un mdp :", email, motDePasse)
+		log.Println("Niveau étude :", niveauEducation)
+		log.Println("formType :", formType)
+		// if formType == "Inscription" {
+		log.Println("POST détecté, inscription requise")
+
+		// On vérifie si l'utilisateur existe
+		queryCheckBDD := "SELECT COUNT(ID) FROM utilisateur WHERE mail=?"
+		numberMail := -1
+		_ = db.QueryRow(queryCheckBDD, email).Scan(&numberMail)
+		if numberMail == 0 {
+			// On l'ajoute le cas échéant
+			// queryBDD := "INSERT INTO utilisateur (mail,nom,prenom,mot_de_passe,date_naissance,id_niveau_etude,lien_linkedin) VALUES (?, ?, ?, ?, ?, ?, ?)"
+			// // queryBDD := "SELECT id,prenom,nom FROM utilisateur WHERE mail = ? AND mot_de_passe = ?"
+			// err := db.QueryRow(queryBDD, email, prenom, nom, motDePasse, dateNaissance, niveauEducation, linkedin).Scan(&idUtilisateur, &firstname, &name)
+
+			// if err != nil {
+			// 	// http.Error(w, err.Error(), http.StatusInternalServerError)
+			// 	log.Printf("Erreur inscription : impossible d'ajouter l'utilisateur")
+			// 	return
+			// }
+		} else {
+			// http.Error(w, "Utilisateur deja existant", http.StatusInternalServerError)
+			log.Printf("Erreur inscription : utilisateur deja existant")
+			// return
+		}
+
+		log.Println("utilisateur ", r.FormValue("email"), r.Method)
+
 		// Données à insérer dans le modèle HTML
 		data := PageData{
 			Title:     "Accueil",
@@ -427,6 +467,7 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		// http.Redirect(w, r, "/", http.StatusSeeOther)
 	})
 
 	// Définir la route pour la page de formulaire
@@ -459,14 +500,17 @@ func main() {
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			log.Println(r.Body, r.PostForm, r.Form)
+			log.Println("utilisateur / ", r.FormValue("email"), r.Method)
+		}
 		if r.Method == "GET" {
 			// Extraire les paramètres de la requête
 			query := r.URL.Query()
 			// Récupération du type du formulaire
 			formType := query.Get("formType")
 
-			// Différencier les requêtes selon les paramètres
-			if formType == "Connexion" {
+			if formType == "Connexion" { // Connexion du client
 				log.Println("GET détecté, connexion requise")
 				// handler(w, r, "connexion.html")
 				email := query.Get("email")
@@ -480,10 +524,10 @@ func main() {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-			} else if formType == "Inscription" {
+			} else if formType == "Inscription" { // Inscription du client (récupération d'un mauvais type de requete)
 				log.Println("GET détecté, inscription requise")
 				// fmt.Fprintf(w, "Received request with param1=anotherValue")
-			} else {
+			} else { // Recherche de documents sur le site
 				// log.Println("GET détecté, recherche requise")
 				query := r.FormValue("query")
 				// log.Println(query)
@@ -496,108 +540,133 @@ func main() {
 					for _, res := range content.Videos {
 						log.Println(res.Titre)
 					}
-					http.Redirect(w, r, "/", http.StatusSeeOther)
+					// http.Redirect(w, r, "/", http.StatusSeeOther)
 				}
 			}
 
 			// Données à insérer dans le modèle HTML
-			data := PageData{
-				Title:     "Accueil",
-				Firstname: firstname,
-				Name:      name,
-				Id:        idUtilisateur,
-				Domaine:   dom,
-				Content:   content,
-			}
+			// data := PageData{
+			// 	Title:     "Accueil",
+			// 	Firstname: firstname,
+			// 	Name:      name,
+			// 	Id:        idUtilisateur,
+			// 	Domaine:   dom,
+			// 	Content:   content,
+			// }
 
-			// Exécuter le modèle avec les données fournies
-			err = tmpl.Execute(w, data)
+			// // Exécuter le modèle avec les données fournies
+			// err = tmpl.Execute(w, data)
+			// if err != nil {
+			// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+			// 	return
+			// }
+		} else if r.Method == "POST" { // Inscription de l'utilisateur
+			// Extraire les paramètres de la requête
+			formType := r.FormValue("formType")
+
+			nom := r.FormValue("nom")
+			prenom := r.FormValue("prenom")
+			dateNaissance := r.FormValue("date-de-naissance")
+			niveauEducation := r.FormValue("niveauEducation")
+			linkedin := r.FormValue("linkedin")
+			// diplome := r.FormValue("diplome")
+			email := r.FormValue("email")
+			motDePasse := r.FormValue("motDePasse")
+			log.Println("La on detecte un email et un mdp :", email, motDePasse)
+			log.Println("Niveau étude :", niveauEducation)
+			log.Println("formType :", formType)
+			// if formType == "Inscription" {
+			log.Println("POST détecté, inscription requise")
+
+			// On vérifie si l'utilisateur existe
+			queryCheckBDD := "SELECT COUNT(ID) FROM utilisateur WHERE mail=?"
+			numberMail := -1
+			_ = db.QueryRow(queryCheckBDD, email).Scan(&numberMail)
+			if numberMail == 0 {
+				// On l'ajoute le cas échéant
+				queryIdEtude := "SELECT id FROM niveau_etude WHERE intitule = ?"
+				idEtude := 0
+				_ = db.QueryRow(queryIdEtude, niveauEducation).Scan(&idEtude)
+				// queryBDD := "INSERT INTO utilisateur (mail,nom,prenom,mot_de_passe,date_naissance,id_niveau_etude,lien_linkedin) VALUES (?, ?, ?, ?, ?, ?, ?)"
+				// queryBDD := "SELECT id,prenom,nom FROM utilisateur WHERE mail = ? AND mot_de_passe = ?"
+				// err := db.QueryRow(queryBDD).Scan(&idUtilisateur, &firstname, &name)
+				_, err = db.Exec("INSERT INTO utilisateur (mail,nom,prenom,mot_de_passe,date_naissance,id_niveau_etude,lien_linkedin) VALUES (?, ?, ?, ?, ?, ?, ?)", email, nom, prenom, motDePasse, dateNaissance, idEtude, linkedin)
+				log.Println(email, prenom, nom, motDePasse, dateNaissance, idEtude, linkedin)
+				if err != nil {
+					// http.Error(w, err.Error(), http.StatusInternalServerError)
+					log.Printf("Erreur inscription : impossible d'ajouter l'utilisateur", err)
+					// return
+				}
+			} else {
+				// http.Error(w, "Utilisateur deja existant", http.StatusInternalServerError)
+				log.Printf("Erreur inscription : utilisateur deja existant")
+				// return
+			}
+			// http.Redirect(w, r, "/", http.StatusSeeOther)
+			// }
+		} else if r.Method == "PUT" { //Ajout d'un document par l'utilisateur
+			log.Println("PUT détecté")
+
+			var document Document
+			if err := json.NewDecoder(r.Body).Decode(&document); err != nil {
+				http.Error(w, "Données JSON invalides", http.StatusBadRequest)
+				log.Println("Erreur de décodage :", err)
+				return
+			}
+			defer r.Body.Close()
+
+			// Répondre avec les données reçues
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(document)
+			log.Printf("Reçu : %+v\n", document)
+
+			// Récupération de l'id du theme
+			var idTheme int
+			query := "SELECT id FROM theme WHERE nom = ?"
+			err := db.QueryRow(query, document.Theme).Scan(&idTheme)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
+				log.Println("Erreur récupération id du thème :", err)
 				return
 			}
 
-		} else if r.Method == "POST" {
-			// Extraire les paramètres de la requête
-			query := r.URL.Query()
-			formType := query.Get("formType")
-			if formType == "Inscription" {
-				log.Println("POST détecté, inscription requise")
+			log.Println("id du theme : ", idTheme)
 
-				nom := query.Get("nom")
-				prenom := query.Get("prenom")
-				dateNaissance := query.Get("date-de-naissance")
-				niveauEducation := query.Get("niveauEducation")
-				linkedin := query.Get("linkedin")
-				// diplome := query.Get("diplome")
-				email := query.Get("email")
-				motDePasse := query.Get("motDePasse")
-
-				// On vérifie si l'utilisateur existe
-				queryCheckBDD := "SELECT ID FROM utilisateur WHERE mail=?"
-				numberMail := -1
-				_ = db.QueryRow(queryCheckBDD, email).Scan(&numberMail)
-				if numberMail == 0 {
-					// On l'ajoute le cas échéant
-					queryBDD := "INSERT INTO utilisateur (mail,nom,prenom,mot_de_passe,date_naissance,id_niveau_etude,lien_linkedin) VALUES (?, ?, ?, ?, ?, ?, ?)"
-					// queryBDD := "SELECT id,prenom,nom FROM utilisateur WHERE mail = ? AND mot_de_passe = ?"
-					err := db.QueryRow(queryBDD, email, prenom, nom, motDePasse, dateNaissance, niveauEducation, linkedin).Scan(&idUtilisateur, &firstname, &name)
-
-					if err != nil {
-						http.Error(w, err.Error(), http.StatusInternalServerError)
-						return
-					}
-				} else {
-					http.Error(w, "Utilisateur deja existant", http.StatusInternalServerError)
-					return
-				}
-			} else if r.Method == "PUT" {
-				log.Println("PUT détecté")
-
-				var document Document
-				if err := json.NewDecoder(r.Body).Decode(&document); err != nil {
-					http.Error(w, "Données JSON invalides", http.StatusBadRequest)
-					log.Println("Erreur de décodage :", err)
-					return
-				}
-				defer r.Body.Close()
-
-				// Répondre avec les données reçues
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
-				json.NewEncoder(w).Encode(document)
-				log.Printf("Reçu : %+v\n", document)
-
-				// Récupération de l'id du theme
-				var idTheme int
-				query := "SELECT id FROM theme WHERE nom = ?"
-				err := db.QueryRow(query, document.Theme).Scan(&idTheme)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					log.Println("Erreur récupération id du thème :", err)
-					return
-				}
-
-				log.Println("id du theme : ", idTheme)
-
-				// Insertion dans la base de données
-				_, err = db.Exec("INSERT INTO document (lien, titre, auteur, id_postant, id_theme, id_type_document, date) values (?, ?, ?, 1, ?, ?, ?)", document.Lien, document.Titre, document.Auteur, idTheme, document.IdTypeDocument, document.Date)
-				if err != nil {
-					http.Error(w, "Erreur lors de l'insertion en base de données", http.StatusInternalServerError)
-					log.Println("Erreur d'insertion du document :", err)
-					return
-				}
-
-				log.Println(document)
+			// Insertion dans la base de données
+			_, err = db.Exec("INSERT INTO document (lien, titre, auteur, id_postant, id_theme, id_type_document, date) values (?, ?, ?, 1, ?, ?, ?)", document.Lien, document.Titre, document.Auteur, idTheme, document.IdTypeDocument, document.Date)
+			if err != nil {
+				http.Error(w, "Erreur lors de l'insertion en base de données", http.StatusInternalServerError)
+				log.Println("Erreur d'insertion du document :", err)
+				return
 			}
-		} else {
-			// r.ParseForm()
-			// firstname = r.FormValue("firstname")
-			// name = r.FormValue("name")
-			// log.Println(firstname)
-			// log.Println(name)
 
+			log.Println(document)
 		}
+		// Données à insérer dans le modèle HTML
+		data := PageData{
+			Title:     "Accueil",
+			Firstname: firstname,
+			Name:      name,
+			Id:        idUtilisateur,
+			Domaine:   dom,
+			Content:   content,
+		}
+
+		// Exécuter le modèle avec les données fournies
+		err = tmpl.Execute(w, data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		// else {
+		// 	// r.ParseForm()
+		// 	// firstname = r.FormValue("firstname")
+		// 	// name = r.FormValue("name")
+		// 	// log.Println(firstname)
+		// 	// log.Println(name)
+
+		// }
 	})
 
 	// Démarrer le serveur sur le port 8080

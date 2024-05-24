@@ -2,12 +2,12 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulaire d'inscription modifié</title>
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <title>Inscription</title>
     <!-- <link rel="stylesheet" href="static/style.css"> -->
 </head>
 <body>
-    <form id="formInscription" method="post">
+    <form id="formInscription" action="/" method="POST">
         <input type="hidden" name="formType" value="Inscription">
         <label for="nom">*Nom :</label>
         <input type="text" id="nom" name="nom" required>
@@ -42,9 +42,9 @@
         <label for="motDePasse">*Mot de passe :</label>
         <input type="password" id="motDePasse" name="motDePasse" required>
 
-        <button type="submit">Submit</button>
+        <button type="submit">S'inscrire</button>
     </form>
 
-    <script src="script.js"></script>
+    <!-- <script src="script.js"></script> -->
 </body>
 </html>
