@@ -29,7 +29,7 @@ main {
     flex-direction: column;
     justify-content: flex-start;
     position: sticky;
-    max-width: 200px;
+    max-width: 300px;
     margin: 0;
 }
 
@@ -74,6 +74,8 @@ main {
     display: flex;
     flex-direction: column;
     padding: 20px;
+    max-height: 100%;
+    position: relative;
 }
 
 form#searchForm {
@@ -82,7 +84,6 @@ form#searchForm {
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 100%;
-    height: 9%;
     margin-bottom: 40px;
 }
 
@@ -111,15 +112,21 @@ form#searchForm button:hover {
     background-color: #009ACD; /* Cyan légèrement plus foncé */
 }
 
+.main-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around; /* Centre les éléments horizontalement */
+}
 
-.videoContainer {
+.container {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    max-width: 1000px;
 }
 
-.videoContainer h2{
+.container h2{
     width: 100%;
     text-align: center;
     padding: 10px 20px; 
@@ -128,15 +135,21 @@ form#searchForm button:hover {
     background-color: #004080; /* Bleu foncé */
     color: #ffffff;
 }
+
+#articlesContainer {
+   margin-top: 40px;
+}
+
 #videos {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
     overflow-y: auto;
-    max-height: 40%;
+    max-height: 500px;
     width: 100%;
-    height: auto;
+    margin: 8px;
 }
+
 #videos  a{
     justify-content: left;
     width: 100%;
@@ -149,23 +162,6 @@ form#searchForm button:hover {
 }
 
 
-
-.articleContainer {
-    display: flex;
-    flex-wrap: wrap;
-    margin-top: 40px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-}
-.articleContainer  h2{
-    width: 100%;
-    text-align: center;
-    padding: 10px 20px; 
-    margin-left: 10px;
-    margin-right: 10px;
-    background-color: #004080; /* Bleu foncé */
-    color: #ffffff;
-}
-
 div {
     text-align: center;
 }
@@ -175,15 +171,31 @@ form {
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 100%;
+    padding: 20px; /* Ajout d'un padding pour un meilleur espacement interne */
+    box-sizing: border-box; /* Assure que le padding est inclus dans la largeur totale */
+}
+
+form label {
+    display: block; /* Assure que les étiquettes sont affichées en bloc */
+    margin-bottom: 5px; /* Espace entre l'étiquette et la zone de saisie */
+    margin-top: 20px;
+    font-weight: bold; /* Met en gras les étiquettes pour une meilleure lisibilité */
+    color: #333; /* Couleur de l'étiquette */
+}
+
+form#documentForm {
+    box-shadow: none;
+    padding-top: 0;
 }
 
 input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="date"],
+input[type="url"],
 select,
 input[type="file"] {
-    width: 100%;
+    width: 80%;
     padding: 10px;
     margin: 8px 0;
     display: inline-block;
@@ -192,8 +204,8 @@ input[type="file"] {
     box-sizing: border-box;
 }
 
-button[type="submit"] {
-    width: 100%;
+button {
+    width: 80%;
     background-color: #00BFFF; /* Cyan */
     color: white;
     padding: 14px 20px;
@@ -203,7 +215,7 @@ button[type="submit"] {
     cursor: pointer;
 }
 
-button[type="submit"]:hover {
+button:hover {
     background-color: #009ACD; /* Cyan légèrement plus foncé */
 }
 
@@ -227,20 +239,31 @@ a:hover {
 }
 
 button#buttonFormulaire {
-    background-color: #00BFFF; /* Cyan */
+    background-color: #129b6d;
     color: white;
-    padding: 10px 20px;
+    padding: 5px 10px; /* Réduire la taille du bouton */
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    margin: 20px 0;
-    font-size: 16px;
+    font-size: 14px; /* Réduire la taille de la police */
     display: inline-block;
     width: auto;
+    position: absolute; /* Positionner de manière absolue */
+    bottom: 10px; /* Espace depuis le bas du parent */
+    right: 10px; /* Espace depuis la droite du parent */
 }
 
 button#buttonFormulaire:hover {
-    background-color: #009ACD; /* Cyan légèrement plus foncé */
+    background-color: #1e8f49; /* Cyan légèrement plus foncé */
+}
+
+button#retourBtn {
+    background-color: #ff0000; /* Rouge */
+    color: white;
+}
+
+button#retourBtn:hover {
+    background-color: #b30000; /* Rouge légèrement plus foncé */
 }
 
 .footer {

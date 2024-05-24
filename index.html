@@ -54,7 +54,7 @@
             <div class="main-content">
 	        <!-- Le contenu principal de notre page -->
 	        <!-- <p>{{.Content.Videos}}</p> -->
-                <div class="videoContainer">
+                <div class="container" id="videosContainer">
                     {{- if .Content.Videos }}
                         <h2>Videos</h2>
                         <div id="videos">
@@ -69,7 +69,7 @@
                     {{- end }}
                 </div>
 		        <!-- <p>{{.Content.Articles}}</p> -->
-                <div class="articleContainer">
+                <div class="container" id="articlesContainer">
                     {{- if .Content.Articles }}
                         <h2>Articles</h2>
                         <ul>
