@@ -1,24 +1,36 @@
 package main
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"sync"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
+type User struct {
+	ID        int
+	FirstName string
+	LastName  string
+}
+
+type Session struct {
+	ID   string
+	User User
+}
+
 // Données à insérer dans le modèle HTML
 type PageData struct {
-	Title     string
-	Firstname string
-	Name      string
-	Id        int
-	Domaine   []Domaine
-	Content   Content
+	Title   string
+	User    User
+	Domaine []Domaine
+	Content Content
 }
 
 type Domaine struct {
@@ -49,98 +61,98 @@ type Document struct {
 	// IdPostant       int `json:"
 }
 
-// L'id par défaut d'un utilisateur non connecté
-var idUtilisateur = 0
+// var idUtilisateur = 0
 
-/* // Save
-func getDomaine() ([]Domaine, error) {
-	log.Println("Connexion à la base de données...")
-	db, err := sql.Open("mysql", "avnadmin:AVNS_x1AB4PkPIRzS-yIr_bP@tcp(learnhub-learnhub.b.aivencloud.com:15055)/learnhub")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	// On vérifie que la connexion à la base de données est réussie
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// On exécute notre requête SQL pour obtenir les domaines
-	rows, err := db.Query("SELECT nom from domaine order by id")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	// Créer un tableau pour stocker les résultats
-	var domaines []Domaine
-
-	// Parcourir les lignes de résultats
-	for rows.Next() {
-		var nomDomaine string
-		// Scanner la valeur de la colonne dans une variable
-		err := rows.Scan(&nomDomaine)
-		if err != nil {
-			return nil, err
-		}
-
-		var dom = Domaine{
-			Nom:    nomDomaine,
-			Themes: []string{},
-		}
-
-		// Ajouter le domaine à notre tableau de domaines
-		domaines = append(domaines, dom)
-	}
-
-	// WORK
-	// Afficher les résultats
-	// log.Println("Résultats:")
-	// for _, domaine := range domaines {
-	// 	log.Println(domaine.Nom)
-	// }
-
-	// Vérifier s'il y a des erreurs lors de l'itération des résultats
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	// On exécute notre requête SQL pour obtenir tous les thèmes
-	rows, err = db.Query("SELECT nom, id_domaine from theme order by id")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	// Parcourir les lignes de résultats
-	for rows.Next() {
-		var nomTheme string
-		var idDomaine int
-		// Scanner la valeur de la colonne dans une variable
-		err := rows.Scan(&nomTheme, &idDomaine)
-		if err != nil {
-			return nil, err
-		}
-
-		// Ajouter le theme à notre tableau de themes du tableau de domaines
-		domaines[idDomaine-1].Themes = append(domaines[idDomaine-1].Themes, nomTheme)
-	}
-
-	// WORK
-	// Afficher les résultats
-	// log.Println("Résultats:")
-	// for _, domaine := range domaines {
-	// 	log.Println(domaine.Nom)
-	// 	for _, theme := range domaine.Themes {
-	// 		log.Println(theme)
-	// 	}
-	// }
-
-	return domaines, nil
+// Store to hold sessions in memory
+var sessionStore = struct {
+	sync.RWMutex
+	sessions map[string]Session
+}{
+	sessions: make(map[string]Session),
 }
-*/
+
+// Générer une chaîne aléatoire pour les cookies de session
+func generateSessionID() (string, error) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return base64.URLEncoding.EncodeToString(b), nil
+}
+
+func authenticateUser(db *sql.DB, email string, password string) (User, bool) {
+	idUtilisateur := 0
+	name := ""
+	firstname := ""
+
+	queryBDD := "SELECT id,prenom,nom FROM utilisateur WHERE mail = ? AND mot_de_passe = ?"
+	err := db.QueryRow(queryBDD, email, password).Scan(&idUtilisateur, &firstname, &name)
+
+	if err != nil {
+		log.Println("Erreur de connexion", err)
+		return User{ID: 1, FirstName: "John", LastName: "Doe"}, false
+	}
+	return User{ID: idUtilisateur, FirstName: firstname, LastName: name}, true
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request, user User) {
+	sessionID, err := generateSessionID()
+	if err != nil {
+		http.Error(w, "Erreur interne du serveur", http.StatusInternalServerError)
+		return
+	}
+
+	// Créer une nouvelle session et la stocker
+	session := Session{
+		ID:   sessionID,
+		User: user,
+	}
+	sessionStore.Lock()
+	sessionStore.sessions[sessionID] = session
+	sessionStore.Unlock()
+
+	// Créer des cookies sécurisés pour la session
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    sessionID,
+		HttpOnly: true,
+		Secure:   false, // A mettre a true en passant en HTTPS
+		Path:     "/",
+		MaxAge:   3600, // 1 heure
+	})
+	http.Redirect(w, r, "/", http.StatusFound)
+	return
+}
+
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	sessionCookie, err := r.Cookie("session_id")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			// Si le cookie n'existe pas, rediriger vers la page de connexion
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+		http.Error(w, "Erreur interne du serveur", http.StatusInternalServerError)
+		return
+	}
+
+	// Supprimer la session du magasin de sessions
+	sessionStore.Lock()
+	delete(sessionStore.sessions, sessionCookie.Value)
+	sessionStore.Unlock()
+
+	// Supprimer le cookie de session
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    "",
+		HttpOnly: true,
+		Secure:   false, // A mettre a true en passant en HTTPS
+		Path:     "/",
+		MaxAge:   -1, // Supprimer le cookie
+	})
+
+	http.Redirect(w, r, "/", http.StatusFound)
+}
 
 func getDomaine() ([]Domaine, error) {
 	log.Println("Connexion à la base de données...")
@@ -365,100 +377,20 @@ func main() {
 	tmpl := template.Must(template.ParseFiles("index.html"))
 
 	// Variables de la page qu'on ne veut pas recharger à chaque requête
-	var name string
-	var firstname string
 	var dom []Domaine
 	var content Content
 
 	// Récupération des domaines pour le menu
 	dom = extractDomainesJSON()
 
-	// Définir la route pour la page par défaut
-	http.HandleFunc("/aled", func(w http.ResponseWriter, r *http.Request) {
-		// On récupère le nom et prenom de l'utilisateur
-		query := "SELECT prenom, nom FROM utilisateur WHERE id = ?"
-		err := db.QueryRow(query, idUtilisateur).Scan(&firstname, &name)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Récupération des domaines pour le menu
-		dom := extractDomainesJSON()
-
-		// Données à insérer dans le modèle HTML
-		data := PageData{
-			Title:     "Accueil",
-			Firstname: firstname,
-			Name:      name,
-			Id:        idUtilisateur,
-			Domaine:   dom,
-			Content:   content,
-		}
-
-		// TODO : make an add domaines and themes form
-		// generateJsonDomaines()
-
-		// Exécuter le modèle avec les données fournies
-		err = tmpl.Execute(w, data)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
 	http.HandleFunc("/deconnexion", func(w http.ResponseWriter, r *http.Request) {
-		idUtilisateur = 0
+		var user User
+		user.ID = 0
+		user.FirstName = ""
+		user.LastName = ""
 
-		// Données à insérer dans le modèle HTML
-		data := PageData{
-			Title:     "Accueil",
-			Firstname: firstname,
-			Name:      name,
-			Id:        idUtilisateur,
-			Domaine:   dom,
-			Content:   content,
-		}
-
-		// Exécuter le modèle avec les données fournies
-		err = tmpl.Execute(w, data)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		logoutHandler(w, r)
 	})
-
-	// http.HandleFunc("/profil", func(w http.ResponseWriter, r *http.Request) {
-	// 	var email string
-	// 	var nom string
-	// 	var prenom string
-	// 	var dateNaissance string
-	// 	var idEtude string
-	// 	var linkedin string
-	// 	queryBDD := "SELECT FROM utilisateur (mail,nom,prenom,date_naissance,id_niveau_etude,lien_linkedin) WHERE id= ?"
-	// 	err := db.QueryRow(queryBDD, idUtilisateur).Scan(&email, &nom, &prenom, &dateNaissance, &idEtude, &linkedin)
-
-	// 	if err != nil {
-	// 		log.Println("Erreur utilisateur introuvable", err)
-	// 	}
-
-	// 	// Données à insérer dans le modèle HTML
-	// 	data := PageData{
-	// 		Title:     "Accueil",
-	// 		Firstname: firstname,
-	// 		Name:      name,
-	// 		Id:        idUtilisateur,
-	// 		Domaine:   dom,
-	// 		Content:   content,
-	// 	}
-
-	// 	// Exécuter le modèle avec les données fournies
-	// 	err = tmpl.Execute(w, data)
-	// 	if err != nil {
-	// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 		return
-	// 	}
-	// })
 
 	// Définir la route pour la page de formulaire
 	http.HandleFunc("/formulaire", func(w http.ResponseWriter, r *http.Request) {
@@ -472,7 +404,7 @@ func main() {
 	http.HandleFunc("/inscription", func(w http.ResponseWriter, r *http.Request) {
 		handler(w, r, "inscription.html")
 	})
-
+	// Définir la route pour la page du profil
 	http.HandleFunc("/profil", func(w http.ResponseWriter, r *http.Request) {
 		handler(w, r, "profil.html")
 	})
@@ -493,10 +425,15 @@ func main() {
 		}
 	})
 
+	// Définir la route pour la page par défaut
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// On réinitialise la recherche
 		var c Content
 		content = c
+
+		// On récupére l'ID de l'utilisateur s'il est connecté
+		// session, _ := store.Get(r, "session-name")
+		// userID, _ := session.Values["userID"].(int)
 
 		if r.Method == "GET" {
 			// Extraire les paramètres de la requête
@@ -506,19 +443,18 @@ func main() {
 			formType := query.Get("formType")
 
 			if formType == "Connexion" { // Connexion du client
-				log.Println("GET détecté, connexion requise")
-				// handler(w, r, "connexion.html")
+				log.Println("GET détecté, connexion en cours")
+
 				email := query.Get("email")
 				motDePasse := query.Get("motDePasse")
 
 				// On vérifie si l'utilisateur existe
-				queryBDD := "SELECT id,prenom,nom FROM utilisateur WHERE mail = ? AND mot_de_passe = ?"
-				err := db.QueryRow(queryBDD, email, motDePasse).Scan(&idUtilisateur, &firstname, &name)
-
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
+				user, userExist := authenticateUser(db, email, motDePasse)
+				if userExist {
+					loginHandler(w, r, user)
 				}
+
+				// log.Println("Session :", session.Values["userID"], session.Values["name"], session.Values["firstname"])
 			} else { // Recherche de documents sur le site
 				query := r.FormValue("query")
 
@@ -563,8 +499,19 @@ func main() {
 						log.Println("Erreur inscription : impossible d'ajouter l'utilisateur", err)
 					}
 
+					idUtilisateur := 0
+					nom := ""
+					prenom := ""
+
 					queryBDD := "SELECT id,prenom,nom FROM utilisateur WHERE mail = ?"
-					err := db.QueryRow(queryBDD, email).Scan(&idUtilisateur, &firstname, &name)
+					err := db.QueryRow(queryBDD, email).Scan(&idUtilisateur, &prenom, &nom)
+
+					var user User
+					user.ID = idUtilisateur
+					user.FirstName = prenom
+					user.LastName = nom
+
+					loginHandler(w, r, user)
 
 					if err != nil {
 						log.Println("Erreur connexion apres inscription", err)
@@ -602,8 +549,23 @@ func main() {
 
 			log.Println("id du theme : ", idTheme)
 
+			var idPostant = 0
+
+			// On récupère les infos de l'utilisateur
+			sessionCookie, err := r.Cookie("session_id")
+			if err != nil {
+				// http.Error(w, "Erreur interne du serveur", http.StatusInternalServerError)
+				log.Println("Erreur, un utilisateur ajoute un document sans etre connecté")
+			} else {
+				// Récupérer la session à partir du magasin de sessions
+				sessionStore.RLock()
+				session, _ := sessionStore.sessions[sessionCookie.Value]
+				sessionStore.RUnlock()
+				idPostant = session.User.ID
+			}
+
 			// Insertion dans la base de données
-			_, err = db.Exec("INSERT INTO document (lien, titre, auteur, id_postant, id_theme, id_type_document, date) values (?, ?, ?, 1, ?, ?, ?)", document.Lien, document.Titre, document.Auteur, idTheme, document.IdTypeDocument, document.Date)
+			_, err = db.Exec("INSERT INTO document (lien, titre, auteur, id_postant, id_theme, id_type_document, date) values (?, ?, ?, ?, ?, ?, ?)", document.Lien, document.Titre, document.Auteur, idPostant, idTheme, document.IdTypeDocument, document.Date)
 			if err != nil {
 				http.Error(w, "Erreur lors de l'insertion en base de données", http.StatusInternalServerError)
 				log.Println("Erreur d'insertion du document :", err)
@@ -612,14 +574,28 @@ func main() {
 
 			log.Println(document)
 		}
+
+		var user User
+		user.ID = 0
+		user.FirstName = ""
+		user.LastName = ""
+
+		// On récupère les infos de l'utilisateur
+		sessionCookie, err := r.Cookie("session_id")
+		if err == nil {
+			// Récupérer la session à partir du magasin de sessions
+			sessionStore.RLock()
+			session, _ := sessionStore.sessions[sessionCookie.Value]
+			sessionStore.RUnlock()
+			user = session.User
+		}
+
 		// Données à insérer dans le modèle HTML
 		data := PageData{
-			Title:     "Accueil",
-			Firstname: firstname,
-			Name:      name,
-			Id:        idUtilisateur,
-			Domaine:   dom,
-			Content:   content,
+			Title:   "Accueil",
+			User:    user,
+			Domaine: dom,
+			Content: content,
 		}
 
 		// Exécuter le modèle avec les données fournies
@@ -628,14 +604,6 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		// else {
-		// 	// r.ParseForm()
-		// 	// firstname = r.FormValue("firstname")
-		// 	// name = r.FormValue("name")
-		// 	// log.Println(firstname)
-		// 	// log.Println(name)
-
-		// }
 	})
 
 	// Démarrer le serveur sur le port 8080

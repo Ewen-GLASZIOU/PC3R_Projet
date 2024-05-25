@@ -15,14 +15,14 @@
         <div class="sidebar">
             <div class="user-profile">
                 <img src="/static/Images/user.png" alt="User Profile Picture">
-                {{- if ne .Id 0 }}
-                    <div id="user-name"> {{.Firstname}} {{.Name}} </div>
+                {{- if ne .User.ID 0 }}
+                    <div id="user-name"> {{.User.FirstName}} {{.User.LastName}} </div>
                 {{- end }}
             </div>
             <div class="menu">
                 <ul>
                     <li><a href="/">Accueil</a></li>
-                    {{- if ne .Id 0 }}
+                    {{- if ne .User.ID 0 }}
                         <li><a onclick="chargerFormulaireConnexion('/profil')" id="profil">Mon profil</a></li>
                         <li><a href="/deconnexion" id="deconnexion">Se déconnecter</a></li>
                     {{- else }}
@@ -82,7 +82,7 @@
                     {{- end }}
                 </div>
 		    </div>
-            {{- if ne .Id 0 }}
+            {{- if ne .User.ID 0 }}
                 <button onclick="chargerFormulaire()" id="buttonFormulaire" type="button">Add</button>
             {{- end }}
             <div class="content" id="formulaireContainer">
