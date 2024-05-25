@@ -15,7 +15,9 @@
         <div class="sidebar">
             <div class="user-profile">
                 <img src="/static/Images/user.png" alt="User Profile Picture">
-                <div id="user-name"> {{.Firstname}} {{.Name}} </div>
+                {{- if ne .Id 0 }}
+                    <div id="user-name"> {{.Firstname}} {{.Name}} </div>
+                {{- end }}
             </div>
             <div class="menu">
                 <ul>
@@ -24,11 +26,9 @@
                         <!-- <li><a href="/profil" id="profil">Mon profil</a></li> -->
                         <li><a href="/deconnexion" id="deconnexion">Se déconnecter</a></li>
                     {{- else }}
-                        <li><a onclick="chargerInscription()" id="inscription">S'inscrire</a></li>
-                        <li><a onclick="chargerConnexion()" id="connexion">Se connecter</a></li>                        
+                        <li><a onclick="chargerFormulaireConnexion('/inscription')" id="inscription">S'inscrire</a></li>
+                        <li><a onclick="chargerFormulaireConnexion('/connexion')" id="connexion">Se connecter</a></li>                        
                     {{- end }}
-                    <!-- <li><a href="/profil">Profil</a></li> -->
-                    <!-- <li><a href="/deconnexion">Déconnexion</a></li> -->
                 </ul>
             </div>
             <div class="domain-list">
@@ -82,7 +82,6 @@
                     {{- end }}
                 </div>
 		    </div>
-            {{ .Id }}
             {{- if ne .Id 0 }}
                 <button onclick="chargerFormulaire()" id="buttonFormulaire" type="button">Add</button>
             {{- end }}

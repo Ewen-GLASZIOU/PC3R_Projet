@@ -370,6 +370,9 @@ func main() {
 	var dom []Domaine
 	var content Content
 
+	// Récupération des domaines pour le menu
+	dom = extractDomainesJSON()
+
 	// Définir la route pour la page par défaut
 	http.HandleFunc("/aled", func(w http.ResponseWriter, r *http.Request) {
 		// On récupère le nom et prenom de l'utilisateur
@@ -406,6 +409,8 @@ func main() {
 
 	http.HandleFunc("/deconnexion", func(w http.ResponseWriter, r *http.Request) {
 		idUtilisateur = 0
+		// firstname = ""
+		// name = ""
 
 		// Données à insérer dans le modèle HTML
 		data := PageData{
@@ -455,15 +460,14 @@ func main() {
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		// On réinitialise la recherche
 		var c Content
 		content = c
-		if r.Method == "POST" {
-			log.Println(r.Body, r.PostForm, r.Form)
-			log.Println("utilisateur / ", r.FormValue("email"), r.Method)
-		}
+
 		if r.Method == "GET" {
 			// Extraire les paramètres de la requête
 			query := r.URL.Query()
+
 			// Récupération du type du formulaire
 			formType := query.Get("formType")
 
@@ -481,13 +485,9 @@ func main() {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-			} else if formType == "Inscription" { // Inscription du client (récupération d'un mauvais type de requete)
-				log.Println("GET détecté, inscription requise")
-				// fmt.Fprintf(w, "Received request with param1=anotherValue")
 			} else { // Recherche de documents sur le site
-				// log.Println("GET détecté, recherche requise")
 				query := r.FormValue("query")
-				// log.Println(query)
+
 				if query != "" { // On empeche de faire une recherche vide qui renvoie tous les resultats
 					log.Println("Recherche :", query)
 
@@ -497,83 +497,48 @@ func main() {
 					for _, res := range content.Videos {
 						log.Println(res.Titre)
 					}
-					// http.Redirect(w, r, "/", http.StatusSeeOther)
 				}
 			}
-
-			// Données à insérer dans le modèle HTML
-			// data := PageData{
-			// 	Title:     "Accueil",
-			// 	Firstname: firstname,
-			// 	Name:      name,
-			// 	Id:        idUtilisateur,
-			// 	Domaine:   dom,
-			// 	Content:   content,
-			// }
-
-			// // Exécuter le modèle avec les données fournies
-			// err = tmpl.Execute(w, data)
-			// if err != nil {
-			// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-			// 	return
-			// }
-		} else if r.Method == "POST" { // Inscription de l'utilisateur
-			// Extraire les paramètres de la requête
+		} else if r.Method == "POST" {
 			formType := r.FormValue("formType")
 
-			nom := r.FormValue("nom")
-			prenom := r.FormValue("prenom")
-			dateNaissance := r.FormValue("date-de-naissance")
-			niveauEducation := r.FormValue("niveauEducation")
-			linkedin := r.FormValue("linkedin")
-			// diplome := r.FormValue("diplome")
-			email := r.FormValue("email")
-			motDePasse := r.FormValue("motDePasse")
-			log.Println("La on detecte un email et un mdp :", email, motDePasse)
-			log.Println("Niveau étude :", niveauEducation)
-			log.Println("formType :", formType)
-			// if formType == "Inscription" {
-			log.Println("POST détecté, inscription requise")
+			if formType == "Inscription" { // Inscription de l'utilisateur
+				nom := r.FormValue("nom")
+				prenom := r.FormValue("prenom")
+				dateNaissance := r.FormValue("date-de-naissance")
+				niveauEducation := r.FormValue("niveauEducation")
+				linkedin := r.FormValue("linkedin")
+				// diplome := r.FormValue("diplome")
+				email := r.FormValue("email")
+				motDePasse := r.FormValue("motDePasse")
 
-			// On vérifie si l'utilisateur existe
-			queryCheckBDD := "SELECT COUNT(ID) FROM utilisateur WHERE mail=?"
-			numberMail := -1
-			_ = db.QueryRow(queryCheckBDD, email).Scan(&numberMail)
-			if numberMail == 0 {
-				// On l'ajoute le cas échéant
-				queryIdEtude := "SELECT id FROM niveau_etude WHERE intitule = ?"
-				idEtude := 0
-				_ = db.QueryRow(queryIdEtude, niveauEducation).Scan(&idEtude)
-				// queryBDD := "INSERT INTO utilisateur (mail,nom,prenom,mot_de_passe,date_naissance,id_niveau_etude,lien_linkedin) VALUES (?, ?, ?, ?, ?, ?, ?)"
-				// queryBDD := "SELECT id,prenom,nom FROM utilisateur WHERE mail = ? AND mot_de_passe = ?"
-				// err := db.QueryRow(queryBDD).Scan(&idUtilisateur, &firstname, &name)
-				_, err = db.Exec("INSERT INTO utilisateur (mail,nom,prenom,mot_de_passe,date_naissance,id_niveau_etude,lien_linkedin) VALUES (?, ?, ?, ?, ?, ?, ?)", email, nom, prenom, motDePasse, dateNaissance, idEtude, linkedin)
-				log.Println(email, prenom, nom, motDePasse, dateNaissance, idEtude, linkedin)
-				if err != nil {
-					// http.Error(w, err.Error(), http.StatusInternalServerError)
-					log.Printf("Erreur inscription : impossible d'ajouter l'utilisateur", err)
-					// return
+				// On vérifie si l'utilisateur existe
+				queryCheckBDD := "SELECT COUNT(ID) FROM utilisateur WHERE mail=?"
+				numberMail := -1
+				_ = db.QueryRow(queryCheckBDD, email).Scan(&numberMail)
+
+				if numberMail == 0 {
+					// On l'ajoute le cas échéant
+					queryIdEtude := "SELECT id FROM niveau_etude WHERE intitule = ?"
+					idEtude := 0
+					_ = db.QueryRow(queryIdEtude, niveauEducation).Scan(&idEtude)
+
+					_, err = db.Exec("INSERT INTO utilisateur (mail,nom,prenom,mot_de_passe,date_naissance,id_niveau_etude,lien_linkedin) VALUES (?, ?, ?, ?, ?, ?, ?)", email, nom, prenom, motDePasse, dateNaissance, idEtude, linkedin)
+
+					if err != nil {
+						log.Println("Erreur inscription : impossible d'ajouter l'utilisateur", err)
+					}
+
+					queryBDD := "SELECT id,prenom,nom FROM utilisateur WHERE mail = ?"
+					err := db.QueryRow(queryBDD, email).Scan(&idUtilisateur, &firstname, &name)
+
+					if err != nil {
+						log.Println("Erreur connexion apres inscription", err)
+					}
+				} else {
+					log.Printf("Erreur inscription : utilisateur deja existant")
 				}
-				idU := 0
-				prenomU := ""
-				nomU := ""
-				queryBDD := "SELECT id,prenom,nom FROM utilisateur WHERE mail = ?"
-				err := db.QueryRow(queryBDD, email, motDePasse).Scan(&idU, &prenomU, &nomU)
-				if err != nil {
-					// http.Error(w, err.Error(), http.StatusInternalServerError)
-					log.Println("Erreur connexion apres inscription")
-					// return
-				}
-				idUtilisateur = idU
-				firstname = prenomU
-				name = nomU
-			} else {
-				// http.Error(w, "Utilisateur deja existant", http.StatusInternalServerError)
-				log.Printf("Erreur inscription : utilisateur deja existant")
-				// return
 			}
-			// http.Redirect(w, r, "/", http.StatusSeeOther)
-			// }
 		} else if r.Method == "PUT" { //Ajout d'un document par l'utilisateur
 			log.Println("PUT détecté")
 
@@ -641,6 +606,7 @@ func main() {
 
 	// Démarrer le serveur sur le port 8080
 	log.Println("Serveur démarré sur le port :8080")
+	generateJsonDomaines()
 	http.ListenAndServe(":8080", nil)
 
 }
