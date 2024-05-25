@@ -376,6 +376,9 @@ button#retourBtn:hover {
     background-color: #b30000; /* Rouge légèrement plus foncé */
 }
 
+.erreur {
+    background-color: #ff0000; /* Rouge */
+}
 
 .footer {
     background-color: #f0f8ff; /* Bleu clair */

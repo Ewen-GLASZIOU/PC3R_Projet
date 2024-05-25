@@ -32,6 +32,7 @@ type PageData struct {
 	User    User
 	Domaine []Domaine
 	Content Content
+	Erreur  string
 }
 
 type Domaine struct {
@@ -125,7 +126,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request, user User) {
 		MaxAge:   3600, // 1 heure
 	})
 	http.Redirect(w, r, "/", http.StatusFound)
-	return
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
@@ -451,6 +451,9 @@ func main() {
 		var c Content
 		content = c
 
+		// On reset la dernière erreur
+		erreur := ""
+
 		// On récupére l'ID de l'utilisateur s'il est connecté
 		// session, _ := store.Get(r, "session-name")
 		// userID, _ := session.Values["userID"].(int)
@@ -473,6 +476,8 @@ func main() {
 				user, userExist := authenticateUser(db, email, motDePasse)
 				if userExist {
 					loginHandler(w, r, user)
+				} else {
+					erreur = "Mail ou mot de passe incorrect"
 				}
 
 				// log.Println("Session :", session.Values["userID"], session.Values["name"], session.Values["firstname"])
@@ -542,6 +547,7 @@ func main() {
 					}
 				} else {
 					log.Printf("Erreur inscription : utilisateur deja existant")
+					erreur = "Utilisateur deja existant"
 				}
 			}
 		} else if r.Method == "PUT" { //Ajout d'un document par l'utilisateur
@@ -591,9 +597,10 @@ func main() {
 			// Insertion dans la base de données
 			_, err = db.Exec("INSERT INTO document (lien, titre, auteur, id_postant, id_theme, id_type_document, date) values (?, ?, ?, ?, ?, ?, ?)", document.Lien, document.Titre, document.Auteur, idPostant, idTheme, document.IdTypeDocument, document.Date)
 			if err != nil {
-				http.Error(w, "Erreur lors de l'insertion en base de données", http.StatusInternalServerError)
+				// http.Error(w, "Erreur lors de l'insertion en base de données", http.StatusInternalServerError)
 				log.Println("Erreur d'insertion du document :", err)
-				return
+				// return
+				erreur = "Erreur d'insertion du document"
 			}
 
 			log.Println(document)
@@ -620,6 +627,7 @@ func main() {
 			User:    user,
 			Domaine: dom,
 			Content: content,
+			Erreur:  erreur,
 		}
 
 		// Exécuter le modèle avec les données fournies
