@@ -409,8 +409,6 @@ func main() {
 
 	http.HandleFunc("/deconnexion", func(w http.ResponseWriter, r *http.Request) {
 		idUtilisateur = 0
-		// firstname = ""
-		// name = ""
 
 		// Données à insérer dans le modèle HTML
 		data := PageData{
@@ -430,6 +428,38 @@ func main() {
 		}
 	})
 
+	// http.HandleFunc("/profil", func(w http.ResponseWriter, r *http.Request) {
+	// 	var email string
+	// 	var nom string
+	// 	var prenom string
+	// 	var dateNaissance string
+	// 	var idEtude string
+	// 	var linkedin string
+	// 	queryBDD := "SELECT FROM utilisateur (mail,nom,prenom,date_naissance,id_niveau_etude,lien_linkedin) WHERE id= ?"
+	// 	err := db.QueryRow(queryBDD, idUtilisateur).Scan(&email, &nom, &prenom, &dateNaissance, &idEtude, &linkedin)
+
+	// 	if err != nil {
+	// 		log.Println("Erreur utilisateur introuvable", err)
+	// 	}
+
+	// 	// Données à insérer dans le modèle HTML
+	// 	data := PageData{
+	// 		Title:     "Accueil",
+	// 		Firstname: firstname,
+	// 		Name:      name,
+	// 		Id:        idUtilisateur,
+	// 		Domaine:   dom,
+	// 		Content:   content,
+	// 	}
+
+	// 	// Exécuter le modèle avec les données fournies
+	// 	err = tmpl.Execute(w, data)
+	// 	if err != nil {
+	// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 		return
+	// 	}
+	// })
+
 	// Définir la route pour la page de formulaire
 	http.HandleFunc("/formulaire", func(w http.ResponseWriter, r *http.Request) {
 		handler(w, r, "formulaire.html")
@@ -441,6 +471,10 @@ func main() {
 	// Définir la route pour la page d'inscription
 	http.HandleFunc("/inscription", func(w http.ResponseWriter, r *http.Request) {
 		handler(w, r, "inscription.html")
+	})
+
+	http.HandleFunc("/profil", func(w http.ResponseWriter, r *http.Request) {
+		handler(w, r, "profil.html")
 	})
 
 	// 127.0.0.1:8080/miniature?id=JX1gUaRydFo

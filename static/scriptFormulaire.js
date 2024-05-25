@@ -41,7 +41,7 @@ function chargerFormulaire() {
 
 // Fonction pour afficher la page de connexion ou d'inscription
 function chargerFormulaireConnexion(page) {
-    if (page == "/connexion" || page == "/inscription") {
+    if (page == "/connexion" || page == "/inscription" || page == "/profil") {
         $.ajax({
             url: page, // URL du fichier contenant le formulaire
             type: "GET",
@@ -71,9 +71,7 @@ function attacherEvenement() {
     $("#documentDate").on("input", function() {
         // Appeler la fonction lorsque du texte est collé dans l'input
         console.log(document.getElementById("documentDate").value);
-    });
-
-    
+    });    
 
     $("#buttonFormulaire").on("click", function() {
         // Appeler la fonction lorsque l'on souhaite ajouter un document

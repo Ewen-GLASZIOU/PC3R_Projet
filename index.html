@@ -23,7 +23,7 @@
                 <ul>
                     <li><a href="/">Accueil</a></li>
                     {{- if ne .Id 0 }}
-                        <!-- <li><a href="/profil" id="profil">Mon profil</a></li> -->
+                        <li><a onclick="chargerFormulaireConnexion('/profil')" id="profil">Mon profil</a></li>
                         <li><a href="/deconnexion" id="deconnexion">Se déconnecter</a></li>
                     {{- else }}
                         <li><a onclick="chargerFormulaireConnexion('/inscription')" id="inscription">S'inscrire</a></li>
