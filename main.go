@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	_ "github.com/go-sql-driver/mysql"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -84,11 +85,14 @@ func authenticateUser(db *sql.DB, email string, password string) (User, bool) {
 	idUtilisateur := 0
 	name := ""
 	firstname := ""
+	hashedPassword := ""
 
-	queryBDD := "SELECT id,prenom,nom FROM utilisateur WHERE mail = ? AND mot_de_passe = ?"
-	err := db.QueryRow(queryBDD, email, password).Scan(&idUtilisateur, &firstname, &name)
+	queryBDD := "SELECT id,prenom,nom,mot_de_passe FROM utilisateur WHERE mail = ?"
+	err := db.QueryRow(queryBDD, email).Scan(&idUtilisateur, &firstname, &name, &hashedPassword)
 
-	if err != nil {
+	match := CheckPasswordHash(password, hashedPassword)
+
+	if err != nil || !match {
 		log.Println("Erreur de connexion", err)
 		return User{ID: 1, FirstName: "John", LastName: "Doe"}, false
 	}
@@ -152,6 +156,22 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	})
 
 	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+// La fonction de hachage pour les mdp
+func HashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
+}
+
+// La fonction de vérifications d'un mdp
+func CheckPasswordHash(password, hash string) bool {
+	// CompareHashAndPassword permet de comparer un mot de passe et un hash bcrypt.
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
 
 func getDomaine() ([]Domaine, error) {
@@ -446,9 +466,10 @@ func main() {
 				log.Println("GET détecté, connexion en cours")
 
 				email := query.Get("email")
+				// motDePasse, err := HashPassword(query.Get("motDePasse"))
 				motDePasse := query.Get("motDePasse")
 
-				// On vérifie si l'utilisateur existe
+				// On vérifie si l'utilisateur existe avec ce mdp
 				user, userExist := authenticateUser(db, email, motDePasse)
 				if userExist {
 					loginHandler(w, r, user)
@@ -480,7 +501,10 @@ func main() {
 				linkedin := r.FormValue("linkedin")
 				// diplome := r.FormValue("diplome")
 				email := r.FormValue("email")
-				motDePasse := r.FormValue("motDePasse")
+				motDePasse, err := HashPassword(r.FormValue("motDePasse"))
+				if err != nil {
+					log.Println("Erreur de hashage du mdp")
+				}
 
 				// On vérifie si l'utilisateur existe
 				queryCheckBDD := "SELECT COUNT(ID) FROM utilisateur WHERE mail=?"
