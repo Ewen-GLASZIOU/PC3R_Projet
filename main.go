@@ -298,23 +298,8 @@ func extractDomainesJSON() []Domaine {
 	return domaines
 }
 
-func getContent(query string) Content {
+func getContent(db *sql.DB, query string) Content {
 	var myContent Content
-
-	log.Println("Connexion à la base de données...")
-	db, err := sql.Open("mysql", "avnadmin:AVNS_x1AB4PkPIRzS-yIr_bP@tcp(learnhub-learnhub.b.aivencloud.com:15055)/learnhub")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	// On vérifie que la connexion à la base de données est réussie
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	search := "'%" + query + "%'"
 
 	// On exécute nos requêtes SQL pour obtenir les documents
 	// rowsVideos, err1 := db.Query("select lien, titre, auteur, date_document from learnhub.document")
@@ -343,6 +328,56 @@ func getContent(query string) Content {
 		// TODO : delete this
 		video.Miniature = getYoutubeThumbnail(video.Lien)
 		// video.Miniature = "https://img.youtube.com/vi/JX1gUaRydFo/0.jpg"
+		myContent.Videos = append(myContent.Videos, video)
+	}
+
+	for rowsArticles.Next() {
+		var article DocumentVisiable
+
+		err2 := rowsArticles.Scan(&article.Lien, &article.Titre, &article.Auteur, &article.Date)
+		if err2 != nil {
+			return myContent
+		}
+
+		myContent.Articles = append(myContent.Articles, article)
+	}
+
+	return myContent
+}
+
+func getContentByTheme(db *sql.DB, theme string) Content {
+	var myContent Content
+
+	idTheme := 0
+
+	// on cherche notre idTheme
+	queryIdTheme := "SELECT id FROM theme WHERE nom = ?"
+	_ = db.QueryRow(queryIdTheme, theme).Scan(&idTheme)
+
+	// On exécute nos requêtes SQL pour obtenir les documents
+	rowsVideos, err1 := db.Query("select lien,titre,auteur,date_document from learnhub.document where (id_theme = " + queryIdTheme + ") AND id_type_document = 1")
+	if err1 != nil {
+		return myContent
+	}
+	defer rowsVideos.Close()
+
+	// rowsArticles, err2 := db.Query("select lien,titre,auteur,date_document from learnhub.document")
+	rowsArticles, err2 := db.Query("select lien,titre,auteur,date_document from learnhub.document where (id_theme = " + queryIdTheme + ") AND id_type_document = 2")
+	if err2 != nil {
+		return myContent
+	}
+	defer rowsArticles.Close()
+
+	for rowsVideos.Next() {
+		var video DocumentVisiable
+
+		err1 := rowsVideos.Scan(&video.Lien, &video.Titre, &video.Auteur, &video.Date)
+		if err1 != nil {
+			return myContent
+		}
+
+		// TODO : delete this
+		video.Miniature = getYoutubeThumbnail(video.Lien)
 		myContent.Videos = append(myContent.Videos, video)
 	}
 
@@ -464,6 +499,7 @@ func main() {
 
 			// Récupération du type du formulaire
 			formType := query.Get("formType")
+			typeRequet := query.Get("typeRequete")
 
 			if formType == "Connexion" { // Connexion du client
 				log.Println("GET détecté, connexion en cours")
@@ -481,13 +517,28 @@ func main() {
 				}
 
 				// log.Println("Session :", session.Values["userID"], session.Values["name"], session.Values["firstname"])
+			} else if typeRequet == "rechercheTheme" {
+				theme := r.FormValue("query")
+
+				if theme != "" { // On empeche de faire une recherche vide qui renvoie tous les resultats
+					log.Println("Recherche :", query)
+
+					content = getContentByTheme(db, theme)
+
+					log.Println("Recherche :", content)
+
+					log.Println("Résultats:")
+					for _, res := range content.Videos {
+						log.Println(res.Titre)
+					}
+				}
 			} else { // Recherche de documents sur le site
 				query := r.FormValue("query")
 
 				if query != "" { // On empeche de faire une recherche vide qui renvoie tous les resultats
 					log.Println("Recherche :", query)
 
-					content = getContent(query)
+					content = getContent(db, query)
 
 					log.Println("Résultats:")
 					for _, res := range content.Videos {
