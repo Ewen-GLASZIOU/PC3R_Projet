@@ -33,3 +33,7 @@ go run main.go
 
 ## Lien vers le GITHUB
 https://github.com/Ewenou/PC3R_Projet
+
+## Lien vers le site déployé
+
+https://pc3r-projet.onrender.com
