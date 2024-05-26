@@ -36,9 +36,10 @@
                 <ul>
                     {{ range .Domaine }}
                     <li>{{ .Nom }}
+                        {{$nom := .Nom}}
                         <ul>
                             {{ range .Themes }}
-                                <li onclick="researchTheme('{{ . }}')">{{ . }}</li>
+                                <li onclick="researchTheme('{{ . }}', '{{ $nom }}')">{{ . }}</li>
                             {{ end }}
                         </ul>
                     </li>

@@ -5,15 +5,20 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"sync"
 
 	_ "github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
 )
+
+const apiKey = "AIzaSyDXCfbgY6DIqU72BZa8bpnOL4n8WyTX_AY"
+const apiURL = "https://www.googleapis.com/youtube/v3/search"
 
 type User struct {
 	ID        int
@@ -61,6 +66,20 @@ type Document struct {
 	Theme          string `json:"documentTheme"`
 	IdTypeDocument int    `json:"documentType"`
 	// IdPostant       int `json:"
+}
+
+// Response structure for YouTube API
+type YouTubeResponse struct {
+	Items []struct {
+		ID struct {
+			VideoID string `json:"videoId"`
+		} `json:"id"`
+		Snippet struct {
+			Title        string `json:"title"`
+			ChannelTitle string `json:"channelTitle"`
+			PublishedAt  string `json:"publishedAt"`
+		} `json:"snippet"`
+	} `json:"items"`
 }
 
 // var idUtilisateur = 0
@@ -172,6 +191,23 @@ func CheckPasswordHash(password, hash string) bool {
 	// CompareHashAndPassword permet de comparer un mot de passe et un hash bcrypt.
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+
+// SearchYouTube function to search videos based on a query
+func SearchYouTube(query string) (*YouTubeResponse, error) {
+	searchURL := fmt.Sprintf("%s?part=snippet&q=%s&type=video&key=%s", apiURL, url.QueryEscape(query), apiKey)
+	resp, err := http.Get(searchURL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var ytResponse YouTubeResponse
+	if err := json.NewDecoder(resp.Body).Decode(&ytResponse); err != nil {
+		return nil, err
+	}
+
+	return &ytResponse, nil
 }
 
 func getDomaine() ([]Domaine, error) {
@@ -303,15 +339,12 @@ func getContent(db *sql.DB, query string) Content {
 
 	search := "'%" + query + "%'"
 	// On exécute nos requêtes SQL pour obtenir les documents
-	// rowsVideos, err1 := db.Query("select lien, titre, auteur, date_document from learnhub.document")
-	// rowsVideos, err1 := db.Query("select lien,titre,auteur,date_document from learnhub.document")
 	rowsVideos, err1 := db.Query("select lien,titre,auteur,date_document from learnhub.document where (titre LIKE " + search + " or auteur LIKE " + search + ") AND id_type_document = 1")
 	if err1 != nil {
 		return myContent
 	}
 	defer rowsVideos.Close()
 
-	// rowsArticles, err2 := db.Query("select lien,titre,auteur,date_document from learnhub.document")
 	rowsArticles, err2 := db.Query("select lien,titre,auteur,date_document from learnhub.document where (titre LIKE " + search + " or auteur LIKE " + search + ") AND id_type_document = 2")
 	if err2 != nil {
 		return myContent
@@ -326,9 +359,8 @@ func getContent(db *sql.DB, query string) Content {
 			return myContent
 		}
 
-		// TODO : delete this
 		video.Miniature = getYoutubeThumbnail(video.Lien)
-		// video.Miniature = "https://img.youtube.com/vi/JX1gUaRydFo/0.jpg"
+		video.Lien = "https://www.youtube.com/watch?v=" + video.Lien
 		myContent.Videos = append(myContent.Videos, video)
 	}
 
@@ -356,14 +388,13 @@ func getContentByTheme(db *sql.DB, theme string) Content {
 	_ = db.QueryRow(queryIdTheme, theme).Scan(&idTheme)
 
 	// On exécute nos requêtes SQL pour obtenir les documents
-	rowsVideos, err1 := db.Query("select lien,titre,auteur,date_document from learnhub.document where (id_theme = " + queryIdTheme + ") AND id_type_document = 1")
+	rowsVideos, err1 := db.Query("select lien,titre,auteur,date_document from learnhub.document where (id_theme = ?) AND id_type_document = 1", idTheme)
 	if err1 != nil {
 		return myContent
 	}
 	defer rowsVideos.Close()
 
-	// rowsArticles, err2 := db.Query("select lien,titre,auteur,date_document from learnhub.document")
-	rowsArticles, err2 := db.Query("select lien,titre,auteur,date_document from learnhub.document where (id_theme = " + queryIdTheme + ") AND id_type_document = 2")
+	rowsArticles, err2 := db.Query("select lien,titre,auteur,date_document from learnhub.document where (id_theme = ?) AND id_type_document = 2", idTheme)
 	if err2 != nil {
 		return myContent
 	}
@@ -377,8 +408,8 @@ func getContentByTheme(db *sql.DB, theme string) Content {
 			return myContent
 		}
 
-		// TODO : delete this
 		video.Miniature = getYoutubeThumbnail(video.Lien)
+		video.Lien = "https://www.youtube.com/watch?v=" + video.Lien
 		myContent.Videos = append(myContent.Videos, video)
 	}
 
@@ -518,22 +549,43 @@ func main() {
 				}
 
 				// log.Println("Session :", session.Values["userID"], session.Values["name"], session.Values["firstname"])
-			} else if typeRequet == "rechercheTheme" {
-				theme := r.FormValue("query")
+			} else if typeRequet == "rechercheTheme" { // Recherche de documents par theme sur le site
+				// theme := r.FormValue("query")
+				theme := r.URL.Query().Get("query")
+				domaine := r.URL.Query().Get("query2")
 
 				if theme != "" { // On empeche de faire une recherche vide qui renvoie tous les resultats
-					log.Println("Recherche :", query)
+					log.Println("Recherche :", theme)
 
 					content = getContentByTheme(db, theme)
-
-					log.Println("Recherche :", content)
 
 					log.Println("Résultats:")
 					for _, res := range content.Videos {
 						log.Println(res.Titre)
 					}
+
+					ytResponse, err := SearchYouTube(domaine + theme) // pour plus de pertinance on cherche le domaine suivi du theme
+					if err != nil {
+						log.Fatalf("Error searching YouTube: %v", err)
+					}
+
+					log.Println("Youtube search")
+
+					for _, item := range ytResponse.Items {
+						var doc DocumentVisiable
+						doc.Lien = "https://www.youtube.com/watch?v=" + item.ID.VideoID
+						doc.Titre = item.Snippet.Title
+						doc.Auteur = item.Snippet.ChannelTitle
+						doc.Date = item.Snippet.PublishedAt
+						doc.Miniature = getYoutubeThumbnail(item.ID.VideoID)
+						content.Videos = append(content.Videos, doc)
+					}
+
+					// http.Redirect(w, r, "/", http.StatusFound)
 				}
-			} else { // Recherche de documents sur le site
+
+				// http.Redirect(w, r, "/", http.StatusFound)
+			} else { // Recherche de documents par titre et auteurs sur le site
 				query := r.FormValue("query")
 
 				if query != "" { // On empeche de faire une recherche vide qui renvoie tous les resultats
@@ -688,6 +740,7 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		// http.Redirect(w, r, "/", http.StatusFound)
 	})
 
 	// Démarrer le serveur sur le port 8080

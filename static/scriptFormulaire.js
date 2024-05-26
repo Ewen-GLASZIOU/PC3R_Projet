@@ -242,23 +242,50 @@ function afficherMiniatureYoutube(videoId) {
     });
 }
 
-function researchTheme(theme) {
+function researchTheme(theme, domaine) {
     // Effectuer la requête GET avec fetch
-    fetch("/?typeRequete=rechercheTheme&query=" + encodeURIComponent(theme), {
-        method: 'GET'
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Success:', data);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+    // fetch("/?typeRequete=rechercheTheme&query=" + encodeURIComponent(theme), {
+    //     method: 'GET'
+    // })
+    // .catch((error) => {
+    //     console.error('Erreur: requete par theme impossible', error);
+    // })
+    // .finally(() => {
+    //     // Recharger la page après l'envoi de la requête
+    //     // window.location.reload();
+    // });
+    console.log("theme : " + theme + " domaine : " + domaine); 
+
+    var form = document.createElement("form");
+    form.setAttribute("method", "get");
+    form.setAttribute("action", "/");
+
+    // Le type de recherche
+    var input1 = document.createElement("input");
+    input1.setAttribute("type", "hidden");
+    input1.setAttribute("name", "typeRequete");
+    input1.setAttribute("value", "rechercheTheme");
+    form.appendChild(input1);
+
+    // Le theme
+    var input2 = document.createElement("input");
+    input2.setAttribute("type", "hidden");
+    input2.setAttribute("name", "query");
+    input2.setAttribute("value", theme);
+    form.appendChild(input2);
+
+    // Le domaine
+    var input3 = document.createElement("input");
+    input3.setAttribute("type", "hidden");
+    input3.setAttribute("name", "query2");
+    input3.setAttribute("value", domaine);
+    form.appendChild(input3);
+
+    // Ajouter le formulaire au body
+    document.body.appendChild(form);
+
+    // Soumettre le formulaire
+    form.submit();
 }
 
 
