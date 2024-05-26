@@ -16,10 +16,18 @@
         <input type="text" id="prenom" name="prenom" disabled>
 
         <label for="date-de-naissance">Date de naissance :</label>
-        <input id="date-de-naissance" name="date-de-naissance" disabled>
+        <input type="date" id="date-de-naissance" name="date-de-naissance" required disabled>
 
         <label for="niveauEducation">Niveau d'éducation :</label>
-        <input id="niveauEducation" name="niveauEducation" disabled>
+        <select id="niveauEducation" name="niveauEducation" required disabled>
+            <option value="">Sélectionnez une option</option>
+            <option value="aucun">Aucun diplôme</option>
+            <option value="baccalaureat">Baccalauréat</option>
+            <option value="licence">Licence</option>
+            <option value="master">Master</option>
+            <option value="doctorat">Doctorat</option>
+        </select>
+
 
         <label for="linkedin">Profil LinkedIn :</label>
         <input type="url" id="linkedin" name="linkedin" disabled>
@@ -27,7 +35,7 @@
         <label for="email">Email :</label>
         <input type="email" id="email" name="email" disabled>
 
-        <button type="submit">Suppression</button>
+        <button class="suppr" id="supprProfil" type="submit">Suppression</button>
     </form>
 </body>
 </html>

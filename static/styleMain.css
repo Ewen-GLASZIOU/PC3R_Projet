@@ -376,6 +376,19 @@ button#retourBtn:hover {
     background-color: #b30000; /* Rouge légèrement plus foncé */
 }
 
+button.suppr {
+    background-color: #ff0000; /* Rouge */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+button.suppr:hover {
+    background-color: #b30000; /* Rouge légèrement plus foncé */
+}
+
 .erreur {
     background-color: #ff0000; /* Rouge */
 }

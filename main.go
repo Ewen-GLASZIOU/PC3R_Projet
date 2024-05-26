@@ -301,6 +301,7 @@ func extractDomainesJSON() []Domaine {
 func getContent(db *sql.DB, query string) Content {
 	var myContent Content
 
+	search := "'%" + query + "%'"
 	// On exécute nos requêtes SQL pour obtenir les documents
 	// rowsVideos, err1 := db.Query("select lien, titre, auteur, date_document from learnhub.document")
 	// rowsVideos, err1 := db.Query("select lien,titre,auteur,date_document from learnhub.document")
