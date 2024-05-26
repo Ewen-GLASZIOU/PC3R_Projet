@@ -121,7 +121,7 @@ function checkLink() {
     document.getElementById("documentTitle").value = "";
     document.getElementById("documentAuthors").value = "";
     document.getElementById("documentDate").value = "";
-
+    
     // Expression régulière pour rechercher "http://" ou "https://"
     let regex = /https?:\/\//;
 
